@@ -16,6 +16,6 @@ public class Panier {
     private Long id;
 
     @OneToOne()
-    @JoinColumn(name = "id_compte", nullable = false)
-    private Compte compte;
+    @JoinColumn(name = "id_user", nullable = false)
+    private User user;
 }
