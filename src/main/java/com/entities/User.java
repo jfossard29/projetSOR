@@ -40,7 +40,7 @@ public class User {
      *
      * Ce champ doit être non nul.
      */
-    @Column(nullable = false)
+    @Column()
     private String token;
 
     /**

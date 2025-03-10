@@ -23,7 +23,7 @@ public class AuthServiceImpl implements AuthService {
     private BCryptPasswordEncoder passwordEncoder;
 
 
-    private final String SECRET_KEY = "secret";
+    private final String SECRET_KEY = "SeCrEtPiZZACeBoN";
 
     public User registerUser(UserDto userDTO) {
         User user = new User();
@@ -36,12 +36,14 @@ public class AuthServiceImpl implements AuthService {
     public void seedAdminUser() {
         String adminUsername = "admin";
         String adminPassword = "lespizzas";
+        Boolean estClient = false;
 
         // Vérification si l'utilisateur "admin" existe déjà
-        if (userRepository.findByUsername(adminUsername).isEmpty()) {
+        if (userRepository.findByNom(adminUsername).isEmpty()) {
             User adminUser = new User();
             adminUser.setNom(adminUsername);
-            adminUser.setNom(passwordEncoder.encode(adminPassword));
+            adminUser.setMdp(passwordEncoder.encode(adminPassword));
+            adminUser.setEstClient(estClient);
 
             userRepository.save(adminUser);
             System.out.println("Utilisateur 'admin' créé avec succès.");

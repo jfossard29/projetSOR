@@ -58,8 +58,10 @@ class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody User user, HttpServletResponse response) {
-        Optional<User> optionalUser = userRepository.findByUsername(user.getNom());
-        if (optionalUser.isEmpty() || !passwordEncoder.matches(user.getNom(), optionalUser.get().getMdp())) {
+        System.out.println(user.toString());
+        Optional<User> optionalUser = userRepository.findByNom(user.getNom());
+        System.out.println(optionalUser.isEmpty());
+        if (optionalUser.isEmpty() || !passwordEncoder.matches(user.getMdp(), optionalUser.get().getMdp())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nom d'utilisateur ou mot de passe incorrect");
         }
         String token = generateToken(optionalUser.get());
