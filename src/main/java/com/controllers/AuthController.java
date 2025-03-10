@@ -34,7 +34,7 @@ class AuthController {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    private final String SECRET_KEY = "secret";
+    private final String SECRET_KEY = "SeCrEtPiZZACeBoN";
     private static final long EXPIRATION_TIME = 86400000;
 
     /**

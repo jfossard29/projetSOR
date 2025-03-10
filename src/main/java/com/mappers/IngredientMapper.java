@@ -32,7 +32,7 @@ public class IngredientMapper {
             ingredient.setId(ingredientDto.getId());
         }
         ingredient.setNom(ingredientDto.getNom());
-        ingredient.setDescription(ingredient.getDescription());
+        ingredient.setDescription(ingredientDto.getDescription());
         ingredient.setPhoto(ingredientDto.getPhoto());
         ingredient.setPrix(ingredientDto.getPrix());
         return ingredient;

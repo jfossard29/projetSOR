@@ -36,4 +36,6 @@ public interface IngredientService {
      * @return la liste des ingrédients
      */
     List<IngredientDto> getAllIngredients();
+
+    IngredientDto updateIngredient(Long ingredientId, IngredientDto ingredientDto);
 }

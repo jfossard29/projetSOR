@@ -74,4 +74,20 @@ public class IngredientServiceImpl implements IngredientService {
                 .map(ingredientMapper::toDto)
                 .toList();
     }
+
+    @Override
+    public IngredientDto updateIngredient(Long ingredientId, IngredientDto ingredientDto) {
+        var existingIngredient = ingredientRepository.findById(ingredientId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("L'ingrédient avec l'ID %d n'existe pas", ingredientId)));
+
+        existingIngredient.setDescription(ingredientDto.getDescription());
+        existingIngredient.setNom(ingredientDto.getNom());
+        existingIngredient.setPhoto(ingredientDto.getPhoto());
+        existingIngredient.setPrix(ingredientDto.getPrix());
+
+        var updatedIngredient = ingredientRepository.save(existingIngredient);
+        return ingredientMapper.toDto(updatedIngredient);
+    }
+
 }

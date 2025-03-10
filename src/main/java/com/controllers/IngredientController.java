@@ -33,7 +33,7 @@ import java.util.Optional;
  * Contrôleur gérant l'authentification des utilisateurs.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/ingredient")
 public class IngredientController {
     @Autowired
     private IngredientService ingredientService;
@@ -63,5 +63,10 @@ public class IngredientController {
     @DeleteMapping("/{id}")
     public Boolean deleteIngredient(@PathVariable Long id){
         return ingredientService.deleteIngredient(id);
+    }
+
+    @PutMapping("/{id}")
+    public IngredientDto updateIngredient(@PathVariable Long id, @RequestBody IngredientDto ingredientDto) {
+        return ingredientService.updateIngredient(id, ingredientDto);
     }
 }
