@@ -45,6 +45,7 @@ public class CommentaireController {
                     .body(ApiResponse.error("Accès non autorisé. Veuillez vous connecter."));
         }
 
+
         ApiResponse<CommentaireDto> res = service.saveCommentaire(dto);
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(res);
     }

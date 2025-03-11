@@ -1,8 +1,5 @@
 package com.dtos;
 
-import com.entities.Pizza;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -20,5 +17,5 @@ public class CommentaireDto {
     private LocalDate date;
     private int note;
     @NotNull
-    private Pizza pizza;
+    private Long idPizza;
 }

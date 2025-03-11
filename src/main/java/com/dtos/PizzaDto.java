@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 @Data
@@ -29,11 +30,7 @@ public class PizzaDto {
     @NotNull
     private Collection<IngredientDto> ingredients_principaux;
 
-    private String commentaire;
-
-    //TODO : rétablir la collection de commentaire
-
-    //private Collection<Commentaire> commentaire = new ArrayList<>();
+    private Collection<Commentaire> commentaire = new ArrayList<>();
 
 
 }

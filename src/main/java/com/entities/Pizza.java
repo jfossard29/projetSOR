@@ -28,13 +28,8 @@ public class Pizza {
     @OneToMany(mappedBy = "pizza", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Collection<IngredientPrincipal> ingredients_principaux = new ArrayList<>();
 
-    //@OneToMany(mappedBy = "pizza")
-    private String commentaire;
-
-    //TODO : rétablir la collection de commentaire
-
-    /*@OneToMany(mappedBy = "pizza")
-    private Collection<Commentaire> commentaire = new ArrayList<>();*/
+    @OneToMany(mappedBy = "pizza")
+    private Collection<Commentaire> commentaire = new ArrayList<>();
 
 }
 

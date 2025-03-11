@@ -34,8 +34,6 @@ public class PizzaMapper {
                         .map(ingredientMapper::toDto) // Mapper l'Ingrédient en DTO
                         .toList()
         );
-        // Charger directement les "Commentaires" depuis Commentaire
-        //TODO : faire le chargement
 
         pizzaDto.setCommentaire(pizza.getCommentaire());
         return pizzaDto;

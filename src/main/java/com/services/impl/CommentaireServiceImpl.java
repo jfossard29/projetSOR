@@ -34,18 +34,24 @@ public class CommentaireServiceImpl implements CommentaireService {
      */
     @Override
     public ApiResponse<CommentaireDto> saveCommentaire(CommentaireDto commentaireDto) {
-        if (!pizzaRepository.existsById(commentaireDto.getPizza().getId())) {
+        if (commentaireDto.getIdPizza() == null) {
+            return ApiResponse.error("L'ID de la pizza est obligatoire pour ajouter un commentaire.");
+        }
+
+        var pizza = pizzaRepository.findById(commentaireDto.getIdPizza()).orElse(null);
+
+        if (pizza == null) {
             return ApiResponse.error("Impossible d'ajouter un commentaire : la pizza n'existe pas.");
         }
 
-        if (commentaireDto.getNote() > 5) {
-            return ApiResponse.error("La note doit être inférieure ou égale à 5.");
-        }
-
         Commentaire commentaire = commentaireMapper.toEntity(commentaireDto);
+        commentaire.setPizza(pizza);
+
         commentaire = commentaireRepository.save(commentaire);
+
         return ApiResponse.success(commentaireMapper.toDto(commentaire), "Commentaire enregistré avec succès !");
     }
+
 
     /**
      * Récupère un commentaire par son ID.
