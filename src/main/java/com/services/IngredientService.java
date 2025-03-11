@@ -1,5 +1,6 @@
 package com.services;
 
+import com.dtos.ApiResponse;
 import com.dtos.IngredientDto;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public interface IngredientService {
      * @param ingredientDto les données de l'ingrédient à sauvegarder
      * @return l'ingrédient sauvegardé avec son ID généré
      */
-    IngredientDto saveIngredient(IngredientDto ingredientDto);
+    ApiResponse<IngredientDto> saveIngredient(IngredientDto ingredientDto);
 
     /**
      * Récupère un ingrédient par son identifiant
@@ -22,20 +23,20 @@ public interface IngredientService {
      * @return l'ingrédient trouvé
      * @throws jakarta.persistence.EntityNotFoundException si l'ingrédient n'existe pas
      */
-    IngredientDto getIngredientById(Long ingredientId);
+    ApiResponse<IngredientDto> getIngredientById(Long ingredientId);
 
     /**
      * Supprime un ingrédient du système
      * @param ingredientId l'identifiant de l'ingrédient à supprimer
      * @return true si la suppression a réussi
      */
-    boolean deleteIngredient(Long ingredientId);
+    ApiResponse<Void> deleteIngredient(Long ingredientId);
 
     /**
      * Récupère tous les ingrédients du système
      * @return la liste des ingrédients
      */
-    List<IngredientDto> getAllIngredients();
+    ApiResponse<List<IngredientDto>> getAllIngredients();
 
-    IngredientDto updateIngredient(Long ingredientId, IngredientDto ingredientDto);
+    ApiResponse<IngredientDto> updateIngredient(Long ingredientId, IngredientDto ingredientDto);
 }

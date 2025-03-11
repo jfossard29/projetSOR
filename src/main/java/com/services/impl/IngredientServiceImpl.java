@@ -1,6 +1,8 @@
 package com.services.impl;
 
+import com.dtos.ApiResponse;
 import com.dtos.IngredientDto;
+import com.entities.Ingredient;
 import com.mappers.IngredientMapper;
 import com.repositories.IngredientRepository;
 import com.services.IngredientService;
@@ -17,67 +19,75 @@ public class IngredientServiceImpl implements IngredientService {
     private final IngredientRepository ingredientRepository;
     private final IngredientMapper ingredientMapper;
 
-    /**
-     * Constructeur avec injection des dépendances
-     * L'injection par constructeur est préférée à @Autowired car :
-     * - Elle rend les dépendances obligatoires
-     * - Elle facilite les tests unitaires
-     * - Elle permet l'immutabilité
-     */
     public IngredientServiceImpl(IngredientRepository ingredientRepository, IngredientMapper ingredientMapper) {
         this.ingredientRepository = ingredientRepository;
         this.ingredientMapper = ingredientMapper;
     }
 
     /**
-     * {@inheritDoc}
-     * Cette méthode est transactionnelle par défaut grâce à @Transactional sur la classe
+     * Enregistre un ingrédient en base de données.
+     * @param ingredientDto L'ingrédient à enregistrer.
+     * @return Une réponse contenant l'ingrédient sauvegardé ou une erreur.
      */
     @Override
-    public IngredientDto saveIngredient(IngredientDto ingredientDto) {
-        var ingredient = ingredientMapper.toEntity(ingredientDto);
-        var savedIngredient = ingredientRepository.save(ingredient);
-        return ingredientMapper.toDto(savedIngredient);
+    public ApiResponse<IngredientDto> saveIngredient(IngredientDto ingredientDto) {
+        Ingredient ingredient = ingredientMapper.toEntity(ingredientDto);
+        ingredient = ingredientRepository.save(ingredient);
+        return ApiResponse.success(ingredientMapper.toDto(ingredient), "Ingrédient enregistré avec succès !");
     }
 
     /**
-     * {@inheritDoc}
-     * Utilisation de la méthode orElseThrow pour une gestion élégante des cas d'erreur
+     * Récupère un ingrédient par son ID.
+     * @param ingredientId L'ID de l'ingrédient.
+     * @return Une réponse contenant l'ingrédient ou une erreur s'il n'existe pas.
      */
     @Override
     @Transactional(readOnly = true)
-    public IngredientDto getIngredientById(Long ingredientId) {
-        var ingredient = ingredientRepository.findById(ingredientId)
+    public ApiResponse<IngredientDto> getIngredientById(Long ingredientId) {
+        Ingredient ingredient = ingredientRepository.findById(ingredientId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("L'ingrédient avec l'ID %d n'existe pas", ingredientId)));
-        return ingredientMapper.toDto(ingredient);
+
+        return ApiResponse.success(ingredientMapper.toDto(ingredient), "Ingrédient trouvé.");
     }
 
     /**
-     * {@inheritDoc}
-     * La méthode deleteById ne lève pas d'exception si l'entité n'existe pas
+     * Supprime un ingrédient par son ID.
+     * @param ingredientId L'ID de l'ingrédient.
+     * @return Une réponse confirmant la suppression ou une erreur.
      */
     @Override
-    public boolean deleteIngredient(Long ingredientId) {
+    public ApiResponse<Void> deleteIngredient(Long ingredientId) {
+        if (!ingredientRepository.existsById(ingredientId)) {
+            return ApiResponse.error("L'ingrédient avec l'ID " + ingredientId + " n'existe pas.");
+        }
         ingredientRepository.deleteById(ingredientId);
-        return true;
+        return ApiResponse.success(null, "Ingrédient supprimé avec succès.");
     }
 
     /**
-     * {@inheritDoc}
-     * Utilisation de l'API Stream pour une transformation fonctionnelle des données
+     * Récupère tous les ingrédients.
+     * @return Une réponse contenant la liste des ingrédients existants.
      */
     @Override
     @Transactional(readOnly = true)
-    public List<IngredientDto> getAllIngredients() {
-        return ingredientRepository.findAll().stream()
+    public ApiResponse<List<IngredientDto>> getAllIngredients() {
+        List<IngredientDto> ingredients = ingredientRepository.findAll().stream()
                 .map(ingredientMapper::toDto)
                 .toList();
+
+        return ApiResponse.success(ingredients, "Liste des ingrédients récupérée avec succès.");
     }
 
+    /**
+     * Met à jour un ingrédient existant.
+     * @param ingredientId L'ID de l'ingrédient.
+     * @param ingredientDto Les nouvelles informations de l'ingrédient.
+     * @return Une réponse contenant l'ingrédient mis à jour ou une erreur.
+     */
     @Override
-    public IngredientDto updateIngredient(Long ingredientId, IngredientDto ingredientDto) {
-        var existingIngredient = ingredientRepository.findById(ingredientId)
+    public ApiResponse<IngredientDto> updateIngredient(Long ingredientId, IngredientDto ingredientDto) {
+        Ingredient existingIngredient = ingredientRepository.findById(ingredientId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("L'ingrédient avec l'ID %d n'existe pas", ingredientId)));
 
@@ -86,8 +96,7 @@ public class IngredientServiceImpl implements IngredientService {
         existingIngredient.setPhoto(ingredientDto.getPhoto());
         existingIngredient.setPrix(ingredientDto.getPrix());
 
-        var updatedIngredient = ingredientRepository.save(existingIngredient);
-        return ingredientMapper.toDto(updatedIngredient);
+        Ingredient updatedIngredient = ingredientRepository.save(existingIngredient);
+        return ApiResponse.success(ingredientMapper.toDto(updatedIngredient), "Ingrédient mis à jour avec succès.");
     }
-
 }
