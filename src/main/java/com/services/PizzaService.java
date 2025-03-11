@@ -1,5 +1,6 @@
 package com.services;
 
+import com.dtos.ApiResponse;
 import com.dtos.PizzaDto;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public interface PizzaService {
      * @param pizzaDto les données de la pizza à sauvegarder
      * @return la pizza sauvegardée avec son ID généré
      */
-    PizzaDto savePizza(PizzaDto pizzaDto);
+    ApiResponse<PizzaDto> savePizza(PizzaDto pizzaDto);
 
     /**
      * Récupère une pizza par son identifiant
@@ -22,20 +23,20 @@ public interface PizzaService {
      * @return la pizza trouvée
      * @throws jakarta.persistence.EntityNotFoundException si la pizza n'existe pas
      */
-    PizzaDto getPizzaById(Long pizzaId);
+    ApiResponse<PizzaDto> getPizzaById(Long pizzaId);
 
     /**
      * Supprime une pizza du système
      * @param pizzaId l'identifiant de la pizza à supprimer
      * @return true si la suppression a réussi
      */
-    boolean deletePizza(Long pizzaId);
+    ApiResponse<Void> deletePizza(Long pizzaId);
 
     /**
      * Récupère toutes les pizzas du système
      * @return la liste des pizzas
      */
-    List<PizzaDto> getAllPizzas();
+    ApiResponse<List<PizzaDto>> getAllPizzas();
 
-    PizzaDto updatePizza(Long pizzaId, PizzaDto pizzaDto);
+    ApiResponse<PizzaDto> updatePizza(Long pizzaId, PizzaDto pizzaDto);
 }

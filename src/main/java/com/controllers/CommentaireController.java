@@ -68,9 +68,9 @@ public class CommentaireController {
     @GetMapping("/pizza/{idPizza}")
     public ResponseEntity<ApiResponse<List<CommentaireDto>>> getCommentairesByPizza(@PathVariable Long idPizza) {
         ApiResponse<List<CommentaireDto>> res = service.getCommentaireByPizza(idPizza);
-        //TODO gere si eurreur ou non
-        return ResponseEntity.status(HttpStatus.OK).body(res);
+        return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND).body(res);
     }
+
 
     /**
      * Met à jour un commentaire (requiert un token JWT valide).

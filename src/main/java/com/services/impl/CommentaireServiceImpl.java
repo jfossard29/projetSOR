@@ -5,6 +5,7 @@ import com.dtos.CommentaireDto;
 import com.entities.Commentaire;
 import com.mappers.CommentaireMapper;
 import com.repositories.CommentaireRepository;
+import com.repositories.PizzaRepository;
 import com.services.CommentaireService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +18,12 @@ import java.util.Optional;
 public class CommentaireServiceImpl implements CommentaireService {
 
     private final CommentaireRepository commentaireRepository;
+    private final PizzaRepository pizzaRepository;
     private final CommentaireMapper commentaireMapper;
 
-    public CommentaireServiceImpl(CommentaireRepository commentaireRepository, CommentaireMapper commentaireMapper) {
+    public CommentaireServiceImpl(CommentaireRepository commentaireRepository, PizzaRepository pizzaRepository, CommentaireMapper commentaireMapper) {
         this.commentaireRepository = commentaireRepository;
+        this.pizzaRepository = pizzaRepository;
         this.commentaireMapper = commentaireMapper;
     }
 
@@ -31,8 +34,14 @@ public class CommentaireServiceImpl implements CommentaireService {
      */
     @Override
     public ApiResponse<CommentaireDto> saveCommentaire(CommentaireDto commentaireDto) {
-        //TODO Vérifier possible mettre un commentaire avec article
-        //TODO Verifier que note inferieur a 5
+        if (!pizzaRepository.existsById(commentaireDto.getPizza().getId())) {
+            return ApiResponse.error("Impossible d'ajouter un commentaire : la pizza n'existe pas.");
+        }
+
+        if (commentaireDto.getNote() > 5) {
+            return ApiResponse.error("La note doit être inférieure ou égale à 5.");
+        }
+
         Commentaire commentaire = commentaireMapper.toEntity(commentaireDto);
         commentaire = commentaireRepository.save(commentaire);
         return ApiResponse.success(commentaireMapper.toDto(commentaire), "Commentaire enregistré avec succès !");
@@ -50,10 +59,23 @@ public class CommentaireServiceImpl implements CommentaireService {
                 .orElseGet(() -> ApiResponse.error("Le commentaire avec l'ID " + id + " n'existe pas."));
     }
 
+    /**
+     * Récupère les commentaires d'une pizza via le repository Pizza.
+     * @param idPizza L'ID de la pizza.
+     * @return Liste des commentaires associés à la pizza.
+     */
     @Override
     public ApiResponse<List<CommentaireDto>> getCommentaireByPizza(Long idPizza) {
-        //TODO faire avec repository Pizza pour recupere tous les commentaire d'un pizza
-        return null;
+        if (!pizzaRepository.existsById(idPizza)) {
+            return ApiResponse.error("Impossible de récupérer les commentaires : la pizza n'existe pas.");
+        }
+
+        List<CommentaireDto> commentaires = pizzaRepository.findCommentairesByPizzaId(idPizza)
+                .stream()
+                .map(commentaireMapper::toDto)
+                .toList();
+
+        return ApiResponse.success(commentaires, "Commentaires récupérés avec succès.");
     }
 
     /**
@@ -67,7 +89,11 @@ public class CommentaireServiceImpl implements CommentaireService {
         if (!commentaireRepository.existsById(id)) {
             return ApiResponse.error("Le commentaire avec l'ID " + id + " n'existe pas.");
         }
-        //Todo verifier que la note inferieur a 5
+
+        if (commentaireDto.getNote() > 5) {
+            return ApiResponse.error("La note doit être inférieure ou égale à 5.");
+        }
+
         commentaireDto.setId(id);
         Commentaire updatedCommentaire = commentaireRepository.save(commentaireMapper.toEntity(commentaireDto));
         return ApiResponse.success(commentaireMapper.toDto(updatedCommentaire), "Commentaire mis à jour.");

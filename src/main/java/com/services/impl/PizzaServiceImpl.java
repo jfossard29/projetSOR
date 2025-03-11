@@ -1,6 +1,8 @@
 package com.services.impl;
 
+import com.dtos.ApiResponse;
 import com.dtos.PizzaDto;
+import com.entities.Pizza;
 import com.mappers.PizzaMapper;
 import com.repositories.PizzaRepository;
 import com.services.PizzaService;
@@ -17,72 +19,80 @@ public class PizzaServiceImpl implements PizzaService {
     private final PizzaRepository pizzaRepository;
     private final PizzaMapper pizzaMapper;
 
-    /**
-     * Constructeur avec injection des dépendances
-     * L'injection par constructeur est préférée à @Autowired car :
-     * - Elle rend les dépendances obligatoires
-     * - Elle facilite les tests unitaires
-     * - Elle permet l'immutabilité
-     */
     public PizzaServiceImpl(PizzaRepository pizzaRepository, PizzaMapper pizzaMapper) {
         this.pizzaRepository = pizzaRepository;
         this.pizzaMapper = pizzaMapper;
     }
 
     /**
-     * {@inheritDoc}
-     * Cette méthode est transactionnelle par défaut grâce à @Transactional sur la classe
+     * Sauvegarde une pizza en base de données.
+     * @param pizzaDto La pizza à sauvegarder.
+     * @return Une réponse contenant la pizza sauvegardée ou une erreur.
      */
     @Override
-    public PizzaDto savePizza(PizzaDto pizzaDto) {
-        var pizza = pizzaMapper.toEntity(pizzaDto);
+    public ApiResponse<PizzaDto> savePizza(PizzaDto pizzaDto) {
+        Pizza pizza = pizzaMapper.toEntity(pizzaDto);
 
         if (pizza.getIngredients_principaux() != null) {
-            pizza.getIngredients_principaux().forEach(ingredientPrincipal -> ingredientPrincipal.setPizza(pizza));
+            pizza.getIngredients_principaux().forEach(ingredient -> ingredient.setPizza(pizza));
         }
-        //TODO : les commentaires
 
-        var savedPizza = pizzaRepository.save(pizza);
-        return pizzaMapper.toDto(savedPizza);
+        Pizza savedPizza = pizzaRepository.save(pizza);
+        return ApiResponse.success(pizzaMapper.toDto(savedPizza), "Pizza enregistrée avec succès !");
     }
 
     /**
-     * {@inheritDoc}
-     * Utilisation de la méthode orElseThrow pour une gestion élégante des cas d'erreur
+     * Récupère une pizza par son ID.
+     * @param pizzaId L'ID de la pizza.
+     * @return Une réponse contenant la pizza trouvée ou une erreur.
      */
     @Override
     @Transactional(readOnly = true)
-    public PizzaDto getPizzaById(Long pizzaId) {
+    public ApiResponse<PizzaDto> getPizzaById(Long pizzaId) {
         var pizza = pizzaRepository.findById(pizzaId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("La pizza avec l'ID %d n'existe pas", pizzaId)));
-        return pizzaMapper.toDto(pizza);
+
+        return ApiResponse.success(pizzaMapper.toDto(pizza), "Pizza trouvée !");
     }
 
     /**
-     * {@inheritDoc}
-     * La méthode deleteById ne lève pas d'exception si l'entité n'existe pas
+     * Supprime une pizza par son ID.
+     * @param pizzaId L'ID de la pizza.
+     * @return Une réponse confirmant la suppression ou une erreur.
      */
     @Override
-    public boolean deletePizza(Long pizzaId) {
+    public ApiResponse<Void> deletePizza(Long pizzaId) {
+        if (!pizzaRepository.existsById(pizzaId)) {
+            return ApiResponse.error("La pizza avec l'ID " + pizzaId + " n'existe pas.");
+        }
+
         pizzaRepository.deleteById(pizzaId);
-        return true;
+        return ApiResponse.success(null, "Pizza supprimée avec succès.");
     }
 
     /**
-     * {@inheritDoc}
-     * Utilisation de l'API Stream pour une transformation fonctionnelle des données
+     * Récupère toutes les pizzas.
+     * @return Une liste des pizzas existantes.
      */
     @Override
     @Transactional(readOnly = true)
-    public List<PizzaDto> getAllPizzas() {
-        return pizzaRepository.findAll().stream()
+    public ApiResponse<List<PizzaDto>> getAllPizzas() {
+        List<PizzaDto> pizzas = pizzaRepository.findAll().stream()
                 .map(pizzaMapper::toDto)
                 .toList();
+
+        return ApiResponse.success(pizzas, "Liste des pizzas récupérée avec succès.");
     }
 
+    /**
+     * Met à jour une pizza existante.
+     * @param pizzaId L'ID de la pizza.
+     * @param pizzaDto Les nouvelles informations de la pizza.
+     * @return Une réponse contenant la pizza mise à jour ou une erreur.
+     */
     @Override
-    public PizzaDto updatePizza(Long pizzaId, PizzaDto pizzaDto) {
+    public ApiResponse<PizzaDto> updatePizza(Long pizzaId, PizzaDto pizzaDto) {
         var existingPizza = pizzaRepository.findById(pizzaId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("La pizza avec l'ID %d n'existe pas", pizzaId)));
@@ -93,7 +103,6 @@ public class PizzaServiceImpl implements PizzaService {
         existingPizza.setPrix(pizzaDto.getPrix());
 
         var updatedPizza = pizzaRepository.save(existingPizza);
-        return pizzaMapper.toDto(updatedPizza);
+        return ApiResponse.success(pizzaMapper.toDto(updatedPizza), "Pizza mise à jour.");
     }
-
 }
