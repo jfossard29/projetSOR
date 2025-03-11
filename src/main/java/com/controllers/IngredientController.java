@@ -33,7 +33,7 @@ import java.util.Optional;
  * Contrôleur gérant l'authentification des utilisateurs.
  */
 @RestController
-@RequestMapping("/ingredient")
+@RequestMapping("/api/ingredient")
 public class IngredientController {
     @Autowired
     private IngredientService ingredientService;
