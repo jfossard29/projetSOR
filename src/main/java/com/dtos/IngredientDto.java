@@ -23,4 +23,7 @@ public class IngredientDto {
 
     @NotBlank(message = "Le prix est obligatoire")
     private Double prix;
+
+    private String formeSvg;
+
 }

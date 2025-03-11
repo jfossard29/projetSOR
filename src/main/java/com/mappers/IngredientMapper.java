@@ -18,6 +18,7 @@ public class IngredientMapper {
         ingredientDto.setDescription(ingredient.getDescription());
         ingredientDto.setPhoto(ingredient.getPhoto());
         ingredientDto.setPrix(ingredient.getPrix());
+        ingredientDto.setFormeSvg(ingredient.getFormeSvg());
         return ingredientDto;
     }
 
@@ -35,6 +36,7 @@ public class IngredientMapper {
         ingredient.setDescription(ingredientDto.getDescription());
         ingredient.setPhoto(ingredientDto.getPhoto());
         ingredient.setPrix(ingredientDto.getPrix());
+        ingredient.setFormeSvg(ingredientDto.getFormeSvg());
         return ingredient;
     }
 }

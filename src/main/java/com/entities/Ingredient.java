@@ -19,5 +19,6 @@ public class Ingredient {
     private String description;
     private String photo;
     private Double prix;
+    private String formeSvg;
 }
 
