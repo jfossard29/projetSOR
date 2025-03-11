@@ -20,7 +20,7 @@ public class Commentaire {
     private String text;
     private String photo;
     private LocalDate date;
-
+    private int note;
     @ManyToOne
     @JoinColumn(name = "id_pizza")
     private Pizza pizza;

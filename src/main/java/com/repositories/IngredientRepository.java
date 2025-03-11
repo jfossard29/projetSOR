@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 /**
- * Repository pour l'accès aux données des utilisateurs.
+ * Repository pour l'accès aux données des Ingredient.
  */
 @Repository
 public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
