@@ -53,7 +53,6 @@ public class PizzaMapper {
         pizza.setPhoto(pizzaDto.getPhoto());
         pizza.setPrix(pizzaDto.getPrix());
         pizza.setCommentaire(pizzaDto.getCommentaire());
-
         return pizza;
     }
 }
