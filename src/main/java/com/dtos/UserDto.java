@@ -28,7 +28,9 @@ public class UserDto {
      */
     private String mdp;
 
-    private String token;
+    private String adressePostale;
+
+    private String adresseEmail;
 
     private Boolean estClient;
 }

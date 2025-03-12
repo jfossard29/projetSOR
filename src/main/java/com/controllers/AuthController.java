@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 
 import com.repositories.UserRepository;
+
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -128,7 +130,6 @@ class AuthController {
     /**
      * Valide un token de session.
      *
-     * @param token Token à valider.
      * @return Token décodé.
      * @throws IllegalStateException si la session est invalide.
      */
@@ -142,4 +143,36 @@ class AuthController {
         }
         return decodedToken;
     }*/
+
+    @GetMapping("/users")
+    public List<UserDto> getUsers() { return authService.getAllUsers(); }
+
+    /**
+     * Récupère les détails d'un utilisateur précis.
+     *
+     * @param id ID de l'utilisateur.
+     * @return Détails de l'utilisateur.
+     */
+    @GetMapping("/users/{id}")
+    public UserDto getUser(@PathVariable Long id) { return authService.getUserById(id); }
+
+    /**
+     * Supprime un utilisateur avec l'ID spécifié.
+     *
+     * @param id ID de l'utilisateur à supprimer.
+     * @return Confirmation de la suppression.
+     */
+    @DeleteMapping("/users/{id}")
+    public Boolean deleteUser(@PathVariable Long id) { return authService.deleteUser(id); }
+
+    /**
+     * Met à jour les données d'un utilisateur.
+     *
+     * @param id      ID de l'utilisateur.
+     * @param userDto Données mises à jour au format DTO.
+     * @return Données actualisées de l'utilisateur.
+     */
+    @PutMapping("/users/{id}")
+    public UserDto updateUser(@PathVariable Long id, @RequestBody UserDto userDto) { return authService.updateUser(id, userDto); }
+
 }
