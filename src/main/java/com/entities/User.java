@@ -36,14 +36,6 @@ public class User {
     private String nom;
 
     /**
-     * Token d'accès de l'utilisateur.
-     *
-     * Ce champ doit être non nul.
-     */
-    @Column()
-    private String token;
-
-    /**
      * Mot de passe haché de l'utilisateur.
      *
      * Ce champ contient le mot de passe de l'utilisateur après avoir été haché pour des raisons de sécurité.
@@ -58,5 +50,10 @@ public class User {
      */
     @Column(nullable = false)
     private Boolean estClient;
+
+    private String adressePostale;
+
+    @Column(nullable = false)
+    private String adresseEmail;
 
 }

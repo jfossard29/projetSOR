@@ -25,8 +25,8 @@ public class AuthFilter implements Filter {
     private static final Set<String> PUBLIC_URLS = new HashSet<>();
 
     static {
-        /*PUBLIC_URLS.add("/login");
-        PUBLIC_URLS.add("/register");*/
+        PUBLIC_URLS.add("/api/login");
+        PUBLIC_URLS.add("/api/register");
     }
 
     private final String SECRET_KEY = "SeCrEtPiZZACeBoN";
@@ -49,8 +49,6 @@ public class AuthFilter implements Filter {
         String path = httpRequest.getServletPath();
         System.out.println("Path intercepté par AuthFilter : " + path);
 
-        /* -- Accès autorisé pour toutes les requêtes pour le moment --
-
         // Si l'URL est publique, on autorise l'accès sans authentification
         if (PUBLIC_URLS.contains(path)) {
             System.out.println("Accès autorisé sans authentification pour : " + path);
@@ -72,7 +70,7 @@ public class AuthFilter implements Filter {
             // Si le token est invalide, on renvoie un code d'erreur 401
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             httpResponse.getWriter().write("Accès non autorisé. Veuillez vous connecter.");
-        }*/
+        }
         System.out.println("Accès autorisé pour toutes les requêtes.");
         chain.doFilter(request, response);
     }

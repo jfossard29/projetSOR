@@ -19,13 +19,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 
 import com.repositories.UserRepository;
+
+import java.util.List;
 import java.util.Optional;
 
 /**
  * Contrôleur gérant l'authentification des utilisateurs.
  */
 @RestController
-@RequestMapping("/")
+@RequestMapping("/api")
 class AuthController {
     @Autowired
     private AuthService authService;
@@ -66,7 +68,7 @@ class AuthController {
         }
         String token = generateToken(optionalUser.get());
         Cookie authCookie = new Cookie("AuthToken", token);
-        authCookie.setHttpOnly(true);
+        authCookie.setHttpOnly(false);
         authCookie.setSecure(false);
         authCookie.setPath("/");
         authCookie.setMaxAge((int) EXPIRATION_TIME / 1000);
@@ -94,10 +96,11 @@ class AuthController {
      */
     private String generateToken(User user) {
         return JWT.create()
-                .withSubject(user.getNom())
-                .withClaim("userId", user.getId())
-                .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .sign(Algorithm.HMAC256(SECRET_KEY));
+                .withSubject(user.getNom()) // Nom de l'utilisateur
+                .withClaim("userId", user.getId()) // ID de l'utilisateur
+                .withClaim("estClient", user.getEstClient()) // Champ estClient
+                .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) // Expiration
+                .sign(Algorithm.HMAC256(SECRET_KEY)); // Signature
     }
 
     /**
@@ -128,7 +131,6 @@ class AuthController {
     /**
      * Valide un token de session.
      *
-     * @param token Token à valider.
      * @return Token décodé.
      * @throws IllegalStateException si la session est invalide.
      */
@@ -142,4 +144,69 @@ class AuthController {
         }
         return decodedToken;
     }*/
+
+    @GetMapping("/users")
+    public List<UserDto> getUsers(@RequestHeader("Authorization") String bearerToken) {
+        if(getAuthorization(bearerToken)) {
+            return authService.getAllUsers();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Récupère les détails d'un utilisateur précis.
+     *
+     * @param id ID de l'utilisateur.
+     * @return Détails de l'utilisateur.
+     */
+    @GetMapping("/users/{id}")
+    public UserDto getUser(@PathVariable Long id, @RequestHeader("Authorization") String bearerToken) {
+        if(getAuthorization(bearerToken)) {
+            return authService.getUserById(id);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Supprime un utilisateur avec l'ID spécifié.
+     *
+     * @param id ID de l'utilisateur à supprimer.
+     * @return Confirmation de la suppression.
+     */
+    @DeleteMapping("/users/{id}")
+    public Boolean deleteUser(@PathVariable Long id, @RequestHeader("Authorization") String bearerToken) {
+        if(getAuthorization(bearerToken)) {
+            return authService.deleteUser(id);
+        } else {
+            return null;
+        }
+
+
+    }
+
+    /**
+     * Met à jour les données d'un utilisateur.
+     *
+     * @param id      ID de l'utilisateur.
+     * @param userDto Données mises à jour au format DTO.
+     * @return Données actualisées de l'utilisateur.
+     */
+    @PutMapping("/users/{id}")
+    public UserDto updateUser(@PathVariable Long id, @RequestBody UserDto userDto, @RequestHeader("Authorization") String bearerToken) {
+        if(getAuthorization(bearerToken)) {
+            return authService.updateUser(id, userDto);
+        } else {
+            return null;
+        }
+    }
+
+    public Boolean getAuthorization(String bearerToken) {
+        String token = bearerToken.substring(7);
+        Algorithm algorithm = Algorithm.HMAC256(SECRET_KEY);
+        DecodedJWT decodedJWT = JWT.require(algorithm).build().verify(token);
+        Boolean estClient = decodedJWT.getClaim("estClient").asBoolean();
+        return !estClient;
+    }
 }
