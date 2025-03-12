@@ -63,6 +63,7 @@ public class IngredientController {
         }
 
         ApiResponse<IngredientDto> res = ingredientService.saveIngredient(ingredientDto);
+        res = ingredientService.getIngredientById(res.getData().getId());
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(res);
     }
 

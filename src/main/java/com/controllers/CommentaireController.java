@@ -47,6 +47,7 @@ public class CommentaireController {
 
 
         ApiResponse<CommentaireDto> res = service.saveCommentaire(dto);
+        res = service.getCommentaireById(res.getData().getId());
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(res);
     }
 

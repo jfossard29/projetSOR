@@ -2,14 +2,17 @@ package com.services.impl;
 
 import com.dtos.ApiResponse;
 import com.dtos.PizzaDto;
+import com.entities.IngredientPrincipal;
 import com.entities.Pizza;
 import com.mappers.PizzaMapper;
+import com.repositories.IngredientRepository;
 import com.repositories.PizzaRepository;
 import com.services.PizzaService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service("PizzaService")
@@ -18,10 +21,11 @@ public class PizzaServiceImpl implements PizzaService {
 
     private final PizzaRepository pizzaRepository;
     private final PizzaMapper pizzaMapper;
-
-    public PizzaServiceImpl(PizzaRepository pizzaRepository, PizzaMapper pizzaMapper) {
+    private  final IngredientRepository ingredientRepository;
+    public PizzaServiceImpl(PizzaRepository pizzaRepository, PizzaMapper pizzaMapper, IngredientRepository ingredientRepository) {
         this.pizzaRepository = pizzaRepository;
         this.pizzaMapper = pizzaMapper;
+        this.ingredientRepository = ingredientRepository;
     }
 
     /**
@@ -33,13 +37,30 @@ public class PizzaServiceImpl implements PizzaService {
     public ApiResponse<PizzaDto> savePizza(PizzaDto pizzaDto) {
         Pizza pizza = pizzaMapper.toEntity(pizzaDto);
 
-        if (pizza.getIngredients_principaux() != null) {
-            pizza.getIngredients_principaux().forEach(ingredient -> ingredient.setPizza(pizza));
+        if (pizza.getIngredients_principaux() == null) {
+            pizza.setIngredients_principaux(new ArrayList<>());
         }
 
-        Pizza savedPizza = pizzaRepository.save(pizza);
-        return ApiResponse.success(pizzaMapper.toDto(savedPizza), "Pizza enregistrée avec succès !");
+        final Pizza pizzaFinal = pizza;
+
+        if (pizzaDto.getIngredients_principaux() != null) {
+            pizzaDto.getIngredients_principaux().forEach(ingredientDto -> {
+                var ingredient = ingredientRepository.findById(ingredientDto.getId())
+                        .orElseThrow(() -> new EntityNotFoundException("Ingrédient avec ID " + ingredientDto.getId() + " non trouvé"));
+
+                IngredientPrincipal ingredientPrincipal = new IngredientPrincipal();
+                ingredientPrincipal.setPizza(pizzaFinal);
+                ingredientPrincipal.setIngredient(ingredient);
+                pizzaFinal.getIngredients_principaux().add(ingredientPrincipal);
+            });
+        }
+
+        pizza = pizzaRepository.save(pizza);
+
+        return ApiResponse.success(pizzaMapper.toDto(pizza), "Pizza enregistrée avec succès !");
     }
+
+
 
     /**
      * Récupère une pizza par son ID.

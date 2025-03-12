@@ -54,20 +54,6 @@ public class PizzaMapper {
         pizza.setPrix(pizzaDto.getPrix());
         pizza.setCommentaire(pizzaDto.getCommentaire());
 
-        // Liaison avec les Ingredients_principaux via la table IngredientPrincipal
-        if (pizzaDto.getIngredients_principaux() != null) {
-            pizza.setIngredients_principaux(
-                    pizzaDto.getIngredients_principaux().stream().map(ingredientDto -> {
-                        IngredientPrincipal ingredientPrincipal = new IngredientPrincipal();
-                        ingredientPrincipal.setPizza(pizza); // Relier la pizza
-                        ingredientPrincipal.setIngredient(ingredientMapper.toEntity(ingredientDto)); // Associer un ingrédient
-                        return ingredientPrincipal;
-                    }).toList()
-            );
-        }
-        // Liaison avec les Ingredients_principaux via la table IngredientPrincipal
-        //TODO : La liaison
-
         return pizza;
     }
 }

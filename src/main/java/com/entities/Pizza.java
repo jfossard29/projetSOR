@@ -26,7 +26,7 @@ public class Pizza {
     private String photo;
     private Double prix;
 
-    @OneToMany(mappedBy = "pizza", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "pizza", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Collection<IngredientPrincipal> ingredients_principaux = new ArrayList<>();
 
     @OneToMany(mappedBy = "pizza")

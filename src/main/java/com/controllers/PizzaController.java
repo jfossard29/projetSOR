@@ -63,6 +63,7 @@ public class PizzaController {
         }
 
         ApiResponse<PizzaDto> res = pizzaService.savePizza(pizzaDto);
+        res = pizzaService.getPizzaById(res.getData().getId());
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(res);
     }
 
