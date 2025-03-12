@@ -1,5 +1,6 @@
 package com.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -24,10 +25,12 @@ public class Commentaire {
     private int note;
     @ManyToOne
     @JoinColumn(name = "id_pizza")
+    @JsonBackReference
     private Pizza pizza;
 
     @ManyToOne
     @JoinColumn(name = "id_user")
     @NotNull
+    @JsonBackReference
     private User user;
 }
