@@ -25,8 +25,8 @@ public class AuthFilter implements Filter {
     private static final Set<String> PUBLIC_URLS = new HashSet<>();
 
     static {
-        PUBLIC_URLS.add("/login");
-        PUBLIC_URLS.add("/register");
+        PUBLIC_URLS.add("/api/login");
+        PUBLIC_URLS.add("/api/register");
     }
 
     private final String SECRET_KEY = "SeCrEtPiZZACeBoN";

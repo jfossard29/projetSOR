@@ -27,7 +27,7 @@ import java.util.Optional;
  * Contrôleur gérant l'authentification des utilisateurs.
  */
 @RestController
-@RequestMapping("/")
+@RequestMapping("/api")
 class AuthController {
     @Autowired
     private AuthService authService;
@@ -68,7 +68,7 @@ class AuthController {
         }
         String token = generateToken(optionalUser.get());
         Cookie authCookie = new Cookie("AuthToken", token);
-        authCookie.setHttpOnly(true);
+        authCookie.setHttpOnly(false);
         authCookie.setSecure(false);
         authCookie.setPath("/");
         authCookie.setMaxAge((int) EXPIRATION_TIME / 1000);
