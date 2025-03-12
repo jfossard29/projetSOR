@@ -146,12 +146,12 @@ class AuthController {
     }*/
 
     @GetMapping("/users")
-    public List<UserDto> getUsers(@RequestHeader("Authorization") String bearerToken) {
-        if(getAuthorization(bearerToken)) {
+    public List<UserDto> getUsers() {
+        //if(getAuthorization(bearerToken)) {
             return authService.getAllUsers();
-        } else {
-            return null;
-        }
+        //} else {
+        //    return null;
+        //}
     }
 
     /**
@@ -161,12 +161,12 @@ class AuthController {
      * @return Détails de l'utilisateur.
      */
     @GetMapping("/users/{id}")
-    public UserDto getUser(@PathVariable Long id, @RequestHeader("Authorization") String bearerToken) {
-        if(getAuthorization(bearerToken)) {
+    public UserDto getUser(@PathVariable Long id) {
+        //if(getAuthorization(bearerToken)) {
             return authService.getUserById(id);
-        } else {
-            return null;
-        }
+       // } else {
+        //    return null;
+        //}
     }
 
     /**
@@ -176,12 +176,12 @@ class AuthController {
      * @return Confirmation de la suppression.
      */
     @DeleteMapping("/users/{id}")
-    public Boolean deleteUser(@PathVariable Long id, @RequestHeader("Authorization") String bearerToken) {
-        if(getAuthorization(bearerToken)) {
+    public Boolean deleteUser(@PathVariable Long id) {
+        //if(getAuthorization(bearerToken)) {
             return authService.deleteUser(id);
-        } else {
-            return null;
-        }
+       // } else {
+       //     return null;
+        //}
 
 
     }
@@ -194,12 +194,12 @@ class AuthController {
      * @return Données actualisées de l'utilisateur.
      */
     @PutMapping("/users/{id}")
-    public UserDto updateUser(@PathVariable Long id, @RequestBody UserDto userDto, @RequestHeader("Authorization") String bearerToken) {
-        if(getAuthorization(bearerToken)) {
+    public UserDto updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
+       // if(getAuthorization(bearerToken)) {
             return authService.updateUser(id, userDto);
-        } else {
-            return null;
-        }
+      //  } else {
+       //     return null;
+      //  }
     }
 
     public Boolean getAuthorization(String bearerToken) {

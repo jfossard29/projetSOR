@@ -71,8 +71,6 @@ public class AuthFilter implements Filter {
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             httpResponse.getWriter().write("Accès non autorisé. Veuillez vous connecter.");
         }
-        System.out.println("Accès autorisé pour toutes les requêtes.");
-        chain.doFilter(request, response);
     }
 
     /**

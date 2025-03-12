@@ -96,7 +96,11 @@ public class AuthServiceImpl implements AuthService {
                         String.format("Le compte avec l'ID %d n'existe pas", userId)));
 
         existingUser.setNom(userDto.getNom());
-        existingUser.setMdp(passwordEncoder.encode(userDto.getMdp()));
+
+        if (userDto.getMdp() != null && !userDto.getMdp().isBlank()) {
+            existingUser.setMdp(passwordEncoder.encode(userDto.getMdp()));
+        }
+
         existingUser.setAdressePostale(userDto.getAdressePostale());
         existingUser.setAdresseEmail(userDto.getAdresseEmail());
 
