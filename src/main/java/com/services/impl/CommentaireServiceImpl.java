@@ -3,9 +3,12 @@ package com.services.impl;
 import com.dtos.ApiResponse;
 import com.dtos.CommentaireDto;
 import com.entities.Commentaire;
+import com.entities.Pizza;
+import com.entities.User;
 import com.mappers.CommentaireMapper;
 import com.repositories.CommentaireRepository;
 import com.repositories.PizzaRepository;
+import com.repositories.UserRepository;
 import com.services.CommentaireService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,44 +23,41 @@ public class CommentaireServiceImpl implements CommentaireService {
     private final CommentaireRepository commentaireRepository;
     private final PizzaRepository pizzaRepository;
     private final CommentaireMapper commentaireMapper;
+    private final UserRepository userRepository;
 
-    public CommentaireServiceImpl(CommentaireRepository commentaireRepository, PizzaRepository pizzaRepository, CommentaireMapper commentaireMapper) {
+    public CommentaireServiceImpl(CommentaireRepository commentaireRepository, PizzaRepository pizzaRepository, CommentaireMapper commentaireMapper, UserRepository userRepository) {
         this.commentaireRepository = commentaireRepository;
         this.pizzaRepository = pizzaRepository;
         this.commentaireMapper = commentaireMapper;
+        this.userRepository = userRepository;
     }
 
-    /**
-     * Sauvegarde un commentaire en base de données.
-     * @param commentaireDto Le commentaire à sauvegarder.
-     * @return Une réponse contenant le commentaire sauvegardé ou une erreur.
-     */
     @Override
     public ApiResponse<CommentaireDto> saveCommentaire(CommentaireDto commentaireDto) {
         if (commentaireDto.getIdPizza() == null) {
             return ApiResponse.error("L'ID de la pizza est obligatoire pour ajouter un commentaire.");
         }
 
-        var pizza = pizzaRepository.findById(commentaireDto.getIdPizza()).orElse(null);
-
+        Pizza pizza = pizzaRepository.findById(commentaireDto.getIdPizza()).orElse(null);
         if (pizza == null) {
             return ApiResponse.error("Impossible d'ajouter un commentaire : la pizza n'existe pas.");
         }
 
-        Commentaire commentaire = commentaireMapper.toEntity(commentaireDto);
-        commentaire.setPizza(pizza);
+        User user = userRepository.findById(commentaireDto.getIdUser()).orElse(null);
+        if (user == null) {
+            return ApiResponse.error("Impossible d'ajouter un commentaire : l'utilisateur n'existe pas.");
+        }
 
+        Commentaire commentaire = commentaireMapper.toEntity(commentaireDto, pizza, user);
         commentaire = commentaireRepository.save(commentaire);
 
-        return ApiResponse.success(commentaireMapper.toDto(commentaire), "Commentaire enregistré avec succès !");
+        if (commentaire != null) {
+            return ApiResponse.success(commentaireMapper.toDto(commentaire), "Commentaire enregistré avec succès !");
+        } else {
+            return ApiResponse.error("Une erreur est survenue lors de l'enregistrement du commentaire.");
+        }
     }
 
-
-    /**
-     * Récupère un commentaire par son ID.
-     * @param id L'ID du commentaire.
-     * @return Une réponse contenant le commentaire trouvé ou une erreur.
-     */
     @Override
     public ApiResponse<CommentaireDto> getCommentaireById(Long id) {
         Optional<Commentaire> commentaire = commentaireRepository.findById(id);
@@ -65,11 +65,6 @@ public class CommentaireServiceImpl implements CommentaireService {
                 .orElseGet(() -> ApiResponse.error("Le commentaire avec l'ID " + id + " n'existe pas."));
     }
 
-    /**
-     * Récupère les commentaires d'une pizza via le repository Pizza.
-     * @param idPizza L'ID de la pizza.
-     * @return Liste des commentaires associés à la pizza.
-     */
     @Override
     public ApiResponse<List<CommentaireDto>> getCommentaireByPizza(Long idPizza) {
         if (!pizzaRepository.existsById(idPizza)) {
@@ -84,12 +79,6 @@ public class CommentaireServiceImpl implements CommentaireService {
         return ApiResponse.success(commentaires, "Commentaires récupérés avec succès.");
     }
 
-    /**
-     * Met à jour un commentaire existant.
-     * @param id L'ID du commentaire.
-     * @param commentaireDto Les nouvelles informations du commentaire.
-     * @return Une réponse contenant le commentaire mis à jour ou une erreur.
-     */
     @Override
     public ApiResponse<CommentaireDto> updateCommentaire(Long id, CommentaireDto commentaireDto) {
         if (!commentaireRepository.existsById(id)) {
@@ -101,15 +90,18 @@ public class CommentaireServiceImpl implements CommentaireService {
         }
 
         commentaireDto.setId(id);
-        Commentaire updatedCommentaire = commentaireRepository.save(commentaireMapper.toEntity(commentaireDto));
+        var pizza = pizzaRepository.findById(commentaireDto.getIdPizza()).orElse(null);
+        if (pizza == null) {
+            return ApiResponse.error("L'ID de la pizza n'existe pas.");
+        }
+        var user = userRepository.findById(commentaireDto.getIdUser()).orElse(null);
+        if (user == null) {
+            return ApiResponse.error("L'ID du Users n'existe pas.");
+        }
+        Commentaire updatedCommentaire = commentaireRepository.save(commentaireMapper.toEntity(commentaireDto,pizza,user));
         return ApiResponse.success(commentaireMapper.toDto(updatedCommentaire), "Commentaire mis à jour.");
     }
 
-    /**
-     * Supprime un commentaire par son ID.
-     * @param id L'ID du commentaire.
-     * @return Une réponse confirmant la suppression ou une erreur.
-     */
     @Override
     public ApiResponse<Void> deleteCommentaire(Long id) {
         if (!commentaireRepository.existsById(id)) {

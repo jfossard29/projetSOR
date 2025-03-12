@@ -45,11 +45,17 @@ public class CommentaireController {
                     .body(ApiResponse.error("Accès non autorisé. Veuillez vous connecter."));
         }
 
-
         ApiResponse<CommentaireDto> res = service.saveCommentaire(dto);
-        res = service.getCommentaireById(res.getData().getId());
+
+        if (res.isSuccess() && res.getData() != null) {
+            res = service.getCommentaireById(res.getData().getId());
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+        }
+
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(res);
     }
+
 
     /**
      * Récupère un commentaire par son ID.

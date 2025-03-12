@@ -2,6 +2,8 @@ package com.mappers;
 
 import com.dtos.CommentaireDto;
 import com.entities.Commentaire;
+import com.entities.Pizza;
+import com.entities.User;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,11 +21,12 @@ public class CommentaireMapper {
         commentaireDto.setPhoto(commentaire.getPhoto());
         commentaireDto.setNote(commentaire.getNote());
         commentaireDto.setIdPizza(commentaire.getPizza() != null ? commentaire.getPizza().getId() : null);
+        commentaireDto.setIdUser(commentaire.getUser() != null ? commentaire.getUser().getId() : null);
 
         return commentaireDto;
     }
 
-    public Commentaire toEntity(CommentaireDto commentaireDto) {
+    public Commentaire toEntity(CommentaireDto commentaireDto, Pizza pizza, User user) {
         if (commentaireDto == null) {
             return null;
         }
@@ -34,6 +37,9 @@ public class CommentaireMapper {
         commentaire.setDate(commentaireDto.getDate());
         commentaire.setPhoto(commentaireDto.getPhoto());
         commentaire.setNote(commentaireDto.getNote());
+
+        commentaire.setPizza(pizza);
+        commentaire.setUser(user);
 
         return commentaire;
     }

@@ -1,6 +1,7 @@
 package com.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,4 +25,9 @@ public class Commentaire {
     @ManyToOne
     @JoinColumn(name = "id_pizza")
     private Pizza pizza;
+
+    @ManyToOne
+    @JoinColumn(name = "id_user")
+    @NotNull
+    private User user;
 }

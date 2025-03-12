@@ -18,4 +18,7 @@ public class CommentaireDto {
     private int note;
     @NotNull
     private Long idPizza;
+
+    @NotNull
+    private Long idUser;
 }
