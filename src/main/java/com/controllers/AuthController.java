@@ -96,10 +96,11 @@ class AuthController {
      */
     private String generateToken(User user) {
         return JWT.create()
-                .withSubject(user.getNom())
-                .withClaim("userId", user.getId())
-                .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .sign(Algorithm.HMAC256(SECRET_KEY));
+                .withSubject(user.getNom()) // Nom de l'utilisateur
+                .withClaim("userId", user.getId()) // ID de l'utilisateur
+                .withClaim("estClient", user.getEstClient()) // Champ estClient
+                .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) // Expiration
+                .sign(Algorithm.HMAC256(SECRET_KEY)); // Signature
     }
 
     /**
@@ -145,7 +146,13 @@ class AuthController {
     }*/
 
     @GetMapping("/users")
-    public List<UserDto> getUsers() { return authService.getAllUsers(); }
+    public List<UserDto> getUsers(@RequestHeader("Authorization") String bearerToken) {
+        if(getAuthorization(bearerToken)) {
+            return authService.getAllUsers();
+        } else {
+            return null;
+        }
+    }
 
     /**
      * Récupère les détails d'un utilisateur précis.
@@ -154,7 +161,13 @@ class AuthController {
      * @return Détails de l'utilisateur.
      */
     @GetMapping("/users/{id}")
-    public UserDto getUser(@PathVariable Long id) { return authService.getUserById(id); }
+    public UserDto getUser(@PathVariable Long id, @RequestHeader("Authorization") String bearerToken) {
+        if(getAuthorization(bearerToken)) {
+            return authService.getUserById(id);
+        } else {
+            return null;
+        }
+    }
 
     /**
      * Supprime un utilisateur avec l'ID spécifié.
@@ -163,7 +176,15 @@ class AuthController {
      * @return Confirmation de la suppression.
      */
     @DeleteMapping("/users/{id}")
-    public Boolean deleteUser(@PathVariable Long id) { return authService.deleteUser(id); }
+    public Boolean deleteUser(@PathVariable Long id, @RequestHeader("Authorization") String bearerToken) {
+        if(getAuthorization(bearerToken)) {
+            return authService.deleteUser(id);
+        } else {
+            return null;
+        }
+
+
+    }
 
     /**
      * Met à jour les données d'un utilisateur.
@@ -173,6 +194,19 @@ class AuthController {
      * @return Données actualisées de l'utilisateur.
      */
     @PutMapping("/users/{id}")
-    public UserDto updateUser(@PathVariable Long id, @RequestBody UserDto userDto) { return authService.updateUser(id, userDto); }
+    public UserDto updateUser(@PathVariable Long id, @RequestBody UserDto userDto, @RequestHeader("Authorization") String bearerToken) {
+        if(getAuthorization(bearerToken)) {
+            return authService.updateUser(id, userDto);
+        } else {
+            return null;
+        }
+    }
 
+    public Boolean getAuthorization(String bearerToken) {
+        String token = bearerToken.substring(7);
+        Algorithm algorithm = Algorithm.HMAC256(SECRET_KEY);
+        DecodedJWT decodedJWT = JWT.require(algorithm).build().verify(token);
+        Boolean estClient = decodedJWT.getClaim("estClient").asBoolean();
+        return !estClient;
+    }
 }
