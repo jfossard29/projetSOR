@@ -1,5 +1,6 @@
 package com.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +22,8 @@ public class IngredientPrincipal {
 
     @ManyToOne
     @JoinColumn(name = "id_pizza", nullable = false)
+    @JsonBackReference("pizza-ingredients")  // Utilisation du même nom que dans Pizza
     public Pizza pizza;
 }
+
 

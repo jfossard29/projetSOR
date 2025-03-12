@@ -2,16 +2,29 @@ package com.controllers;
 
 import com.dtos.ApiResponse;
 import com.dtos.CommentaireDto;
+import com.dtos.IngredientDto;
+import com.dtos.PizzaDto;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.services.CommentaireService;
+import com.services.impl.CommentaireServiceImpl;
+import com.services.impl.FileStorageServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.Arrays;
 import jakarta.servlet.http.Cookie;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Contrôleur REST pour gérer les commentaires.
@@ -19,14 +32,16 @@ import jakarta.servlet.http.Cookie;
 @RestController
 @RequestMapping("/api/commentaire")
 public class CommentaireController {
-    private final CommentaireService service;
+    private final CommentaireServiceImpl commentaireService;
+    private final FileStorageServiceImpl fileStorageService;
 
     /**
      * Constructeur du contrôleur.
-     * @param service le service de gestion des commentaires
+     * @param commentaireService le service de gestion des commentaires
      */
-    public CommentaireController(CommentaireService service) {
-        this.service = service;
+    public CommentaireController(CommentaireServiceImpl commentaireService,FileStorageServiceImpl fileStorageService) {
+        this.commentaireService = commentaireService;
+        this.fileStorageService = fileStorageService;
     }
 
     /**
@@ -45,14 +60,55 @@ public class CommentaireController {
                     .body(ApiResponse.error("Accès non autorisé. Veuillez vous connecter."));
         }
 
-        ApiResponse<CommentaireDto> res = service.saveCommentaire(dto);
+        ApiResponse<CommentaireDto> res = commentaireService.saveCommentaire(dto);
 
         if (res.isSuccess() && res.getData() != null) {
-            res = service.getCommentaireById(res.getData().getId());
+            res = commentaireService.getCommentaireById(res.getData().getId());
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
         }
 
+        return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(res);
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<CommentaireDto>> savePizza(
+            @RequestPart("commentaire") String commentaireJson,
+            @RequestPart(value = "image", required = false) MultipartFile file,
+            HttpServletRequest request
+    ) {
+        if (!isTokenValid(request)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Accès non autorisé. Veuillez vous connecter."));
+        }
+
+        // Logging du JSON reçu
+        System.out.println("JSON reçu: " + commentaireJson);
+
+        // Convertir la chaîne JSON en objet DTO
+        ObjectMapper objectMapper = new ObjectMapper();
+        // Configurer l'ObjectMapper pour être plus tolérant
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        CommentaireDto commentaireDto;
+        try {
+            commentaireDto = objectMapper.readValue(commentaireJson, CommentaireDto.class);
+        } catch (Exception e) {
+            e.printStackTrace(); // Afficher la stack trace complète
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Erreur de conversion JSON: " + e.getMessage()));
+        }
+
+        // Gérer le fichier image
+        System.out.println("Fichier photo: " + file);
+        if (file != null && !file.isEmpty()) {
+            String fileName = fileStorageService.storeFile(file);
+            commentaireDto.setPhoto(fileName);
+        }
+
+        // Sauvegarder la pizza
+        ApiResponse<CommentaireDto> res = commentaireService.saveCommentaire(commentaireDto);
+        res = commentaireService.getCommentaireById(res.getData().getId());
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(res);
     }
 
@@ -64,7 +120,7 @@ public class CommentaireController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CommentaireDto>> getCommentaireById(@PathVariable Long id) {
-        ApiResponse<CommentaireDto> res = service.getCommentaireById(id);
+        ApiResponse<CommentaireDto> res = commentaireService.getCommentaireById(id);
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND).body(res);
     }
 
@@ -75,7 +131,7 @@ public class CommentaireController {
      */
     @GetMapping("/pizza/{idPizza}")
     public ResponseEntity<ApiResponse<List<CommentaireDto>>> getCommentairesByPizza(@PathVariable Long idPizza) {
-        ApiResponse<List<CommentaireDto>> res = service.getCommentaireByPizza(idPizza);
+        ApiResponse<List<CommentaireDto>> res = commentaireService.getCommentaireByPizza(idPizza);
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND).body(res);
     }
 
@@ -98,7 +154,7 @@ public class CommentaireController {
                     .body(ApiResponse.error("Accès non autorisé. Veuillez vous connecter."));
         }
 
-        ApiResponse<CommentaireDto> res = service.updateCommentaire(id, dto);
+        ApiResponse<CommentaireDto> res = commentaireService.updateCommentaire(id, dto);
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND).body(res);
     }
 
@@ -118,8 +174,33 @@ public class CommentaireController {
                     .body(ApiResponse.error("Accès non autorisé. Veuillez vous connecter."));
         }
 
-        ApiResponse<Void> res = service.deleteCommentaire(id);
+        ApiResponse<Void> res = commentaireService.deleteCommentaire(id);
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND).body(res);
+    }
+
+    @GetMapping("/images/{id}")
+    public ResponseEntity<Resource> getCommentaireImage(@PathVariable Long id) {
+        try {
+            CommentaireDto commentaireDto = commentaireService.getCommentaireById(id).getData();
+            if (commentaireDto == null || commentaireDto.getPhoto() == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            String imageFileName = commentaireDto.getPhoto();
+            Path filePath = fileStorageService.getFilePath(imageFileName);
+
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (IOException ex) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
