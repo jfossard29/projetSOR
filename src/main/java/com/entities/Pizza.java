@@ -2,6 +2,7 @@ package com.entities;
 
 import com.dtos.IngredientDto;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -27,11 +28,12 @@ public class Pizza {
     private Double prix;
 
     @OneToMany(mappedBy = "pizza", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference("pizza-ingredients")
     private Collection<IngredientPrincipal> ingredients_principaux = new ArrayList<>();
 
     @OneToMany(mappedBy = "pizza")
-    @JsonBackReference
+    @JsonBackReference("pizza-comments")
     private Collection<Commentaire> commentaire = new ArrayList<>();
-
 }
+
 

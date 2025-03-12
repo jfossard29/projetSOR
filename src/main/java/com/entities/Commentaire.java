@@ -23,9 +23,10 @@ public class Commentaire {
     private String photo;
     private LocalDate date;
     private int note;
+
     @ManyToOne
     @JoinColumn(name = "id_pizza")
-    @JsonBackReference
+    @JsonBackReference("pizza-comments")
     private Pizza pizza;
 
     @ManyToOne
@@ -34,3 +35,4 @@ public class Commentaire {
     @JsonBackReference
     private User user;
 }
+
