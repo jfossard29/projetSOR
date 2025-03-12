@@ -1,8 +1,10 @@
 package com.dtos;
 
+import com.entities.Ingredient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.Collection;
 
 @Data
 @NoArgsConstructor
@@ -13,4 +15,5 @@ public class PizzaCommandeDto {
     private Long panierId;
     private int quantite;
     private Long commandeId;
+    private Collection<Ingredient> ingredientsOptionnels;
 }

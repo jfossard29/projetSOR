@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "panier")
 @Data
@@ -18,4 +20,7 @@ public class Panier {
     @OneToOne()
     @JoinColumn(name = "id_user", nullable = false)
     private User user;
+
+    @OneToMany
+    private List<PizzaCommande> pizzaCommandes;
 }

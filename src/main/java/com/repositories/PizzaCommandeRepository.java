@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface PizzaCommandeRepository extends JpaRepository<PizzaCommande, Long> {
     List<PizzaCommande> findByPanierId(Long panierId);
+
+    void deleteByPanierId(Long panierId);
 }

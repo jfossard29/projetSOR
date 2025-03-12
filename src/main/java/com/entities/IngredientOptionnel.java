@@ -18,10 +18,10 @@ public class IngredientOptionnel {
 
     @ManyToOne
     @JoinColumn(name = "id_pizza_commande", nullable = false)
+    @JsonBackReference("pizza-optionnel")
     private PizzaCommande pizzaCommande;
 
     @ManyToOne
     @JoinColumn(name = "id_ingredient", nullable = false)
-    @JsonBackReference("pizza-ingredients")
     private Ingredient ingredient;
 }
