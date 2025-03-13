@@ -26,12 +26,11 @@ public class PizzaMapper {
         pizzaDto.setPhoto(pizza.getPhoto());
         pizzaDto.setPrix(pizza.getPrix());
 
-        // Charger directement les "Ingrédients" depuis IngredientPrincipal
         pizzaDto.setIngredients_principaux(
                 pizza.getIngredients_principaux()
                         .stream()
-                        .map(IngredientPrincipal::getIngredient) // Obtenir l'ingrédient depuis IngredientPrincipal
-                        .map(ingredientMapper::toDto) // Mapper l'Ingrédient en DTO
+                        .map(IngredientPrincipal::getIngredient)
+                        .map(ingredientMapper::toDto)
                         .toList()
         );
 
