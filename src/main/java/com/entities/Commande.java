@@ -25,5 +25,9 @@ public class Commande {
     @OneToOne
     @JsonBackReference
     private PizzaCommande pizza;
+
+    @ManyToOne
+    @JoinColumn(name = "id_user")
+    private User user;
 }
 

@@ -1,6 +1,5 @@
 package com.dtos;
 
-import com.entities.Ingredient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,5 +14,5 @@ public class PizzaCommandeDto {
     private Long panierId;
     private int quantite;
     private Long commandeId;
-    private Collection<Ingredient> ingredientsOptionnels;
+    private Collection<Long> ingredientsOptionnelsIds;
 }

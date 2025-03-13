@@ -13,16 +13,19 @@ public class PizzaCommandeMapper {
             return null;
         }
 
-        return new PizzaCommandeDto(
-                pizzaCommande.getId(),
-                pizzaCommande.getPizza().getId(),
-                pizzaCommande.getPanier().getId(),
-                pizzaCommande.getQuantite(),
-                pizzaCommande.getCommande() != null ? pizzaCommande.getCommande().getId() : null,
+        PizzaCommandeDto pizzaCommandeDto = new PizzaCommandeDto();
+        pizzaCommandeDto.setId(pizzaCommande.getId());
+        pizzaCommandeDto.setPizzaId(pizzaCommande.getPizza().getId());
+        pizzaCommandeDto.setPanierId(pizzaCommande.getPanier().getId());
+        pizzaCommandeDto.setQuantite(pizzaCommande.getQuantite());
+        pizzaCommandeDto.setCommandeId(pizzaCommande.getCommande() != null ? pizzaCommande.getCommande().getId() : null);
+        pizzaCommandeDto.setIngredientsOptionnelsIds(
                 pizzaCommande.getIngredientsOptionnels().stream()
-                        .map(ingredientOptionnel -> ingredientOptionnel.getIngredient())
-                        .collect(Collectors.toList()) // Convertit en Collection<Ingredient>
+                        .map(ingredientOptionnel -> ingredientOptionnel.getIngredient().getId()) // Utilisation des IDs
+                        .collect(Collectors.toList())
         );
+
+        return pizzaCommandeDto;
     }
 
     public PizzaCommande toEntity(PizzaCommandeDto dto) {
@@ -33,6 +36,7 @@ public class PizzaCommandeMapper {
         PizzaCommande pizzaCommande = new PizzaCommande();
         pizzaCommande.setId(dto.getId());
         pizzaCommande.setQuantite(dto.getQuantite());
+
         return pizzaCommande;
     }
 }
