@@ -13,6 +13,5 @@ public class PizzaCommandeDto {
     private Long pizzaId;
     private Long panierId;
     private int quantite;
-    private Long commandeId;
     private Collection<Long> ingredientsOptionnelsIds;
 }

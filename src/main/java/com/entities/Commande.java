@@ -22,9 +22,9 @@ public class Commande {
     private String numeroCommande;
     private LocalDate date;
 
-    @OneToOne
-    @JsonBackReference
-    private PizzaCommande pizza;
+    @ManyToOne
+    @JoinColumn(name = "pizza_id", nullable = false)
+    private Pizza pizza;
 
     @ManyToOne
     @JoinColumn(name = "id_user")

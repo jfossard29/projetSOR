@@ -18,7 +18,6 @@ public class PizzaCommandeMapper {
         pizzaCommandeDto.setPizzaId(pizzaCommande.getPizza().getId());
         pizzaCommandeDto.setPanierId(pizzaCommande.getPanier().getId());
         pizzaCommandeDto.setQuantite(pizzaCommande.getQuantite());
-        pizzaCommandeDto.setCommandeId(pizzaCommande.getCommande() != null ? pizzaCommande.getCommande().getId() : null);
         pizzaCommandeDto.setIngredientsOptionnelsIds(
                 pizzaCommande.getIngredientsOptionnels().stream()
                         .map(ingredientOptionnel -> ingredientOptionnel.getIngredient().getId()) // Utilisation des IDs

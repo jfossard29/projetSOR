@@ -29,10 +29,6 @@ public class PizzaCommande {
 
     private int quantite;
 
-    @OneToOne
-    @JoinColumn(name = "id_commande")
-    private Commande commande;
-
     @OneToMany(mappedBy = "pizzaCommande", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference("pizza-optionnel")
     private Collection<IngredientOptionnel> ingredientsOptionnels = new ArrayList<>();

@@ -6,18 +6,18 @@ import com.dtos.PanierDto;
 import com.entities.Commande;
 import com.entities.Panier;
 import com.entities.PizzaCommande;
+import com.entities.User;
 import com.mappers.CommandeMapper;
 import com.mappers.PanierMapper;
-import com.repositories.CommandeRepository;
-import com.repositories.PanierRepository;
-import com.repositories.PizzaCommandeRepository;
-import com.repositories.UserRepository;
+import com.repositories.*;
 import com.services.PanierService;
 import com.services.StatistiqueService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,10 +32,11 @@ public class PanierServiceImpl implements PanierService {
     private final StatistiqueService statistiqueService;
     private final PanierMapper panierMapper;
     private final CommandeMapper commandeMapper;
+    private final PizzaRepository pizzaRepository;
 
     public PanierServiceImpl(PanierRepository panierRepository, PizzaCommandeRepository pizzaCommandeRepository,
                              UserRepository userRepository, CommandeRepository commandeRepository,
-                             StatistiqueService statistiqueService, PanierMapper panierMapper, CommandeMapper commandeMapper) {
+                             StatistiqueService statistiqueService, PanierMapper panierMapper, CommandeMapper commandeMapper, PizzaRepository pizzaRepository) {
         this.panierRepository = panierRepository;
         this.pizzaCommandeRepository = pizzaCommandeRepository;
         this.userRepository = userRepository;
@@ -43,13 +44,20 @@ public class PanierServiceImpl implements PanierService {
         this.statistiqueService = statistiqueService;
         this.panierMapper = panierMapper;
         this.commandeMapper = commandeMapper;
+        this.pizzaRepository = pizzaRepository;
     }
 
     @Override
     public ApiResponse<PanierDto> creerPanier(PanierDto panierDto) {
+        // Vérifier si l'utilisateur existe
         var user = userRepository.findById(panierDto.getIdUser());
         if (user.isEmpty()) {
             return ApiResponse.error("Utilisateur introuvable");
+        }
+
+        Panier existingPanier = panierRepository.findByUser(user.get());
+        if (existingPanier != null) {
+            return ApiResponse.error("Un panier existe déjà pour cet utilisateur");
         }
 
         Panier panier = new Panier();
@@ -58,6 +66,7 @@ public class PanierServiceImpl implements PanierService {
 
         return ApiResponse.success(panierMapper.toDto(panier), "Panier créé avec succès !");
     }
+
 
     @Override
     public ApiResponse<PanierDto> viderPanier(Long idPanier) {
@@ -101,7 +110,7 @@ public class PanierServiceImpl implements PanierService {
         return ApiResponse.success(panierMapper.toDto(panier), "Panier fusionné avec succès.");
     }
 
-
+    @Transactional
     @Override
     public ApiResponse<CommandeDto> validerPanier(Long idPanier) {
         Optional<Panier> panierOpt = panierRepository.findById(idPanier);
@@ -114,25 +123,47 @@ public class PanierServiceImpl implements PanierService {
             return ApiResponse.error("Le panier est vide, impossible de valider la commande.");
         }
 
+        User user = userRepository.findById(panier.getUser().getId()).orElseThrow();
         String numeroCommande = UUID.randomUUID().toString();
         LocalDate date = LocalDate.now();
 
-        for (PizzaCommande pizzaCommande : panier.getPizzaCommandes()) {
+        // Sauvegarde temporaire des pizzas commandes avant suppression
+        List<PizzaCommande> pizzaCommandes = new ArrayList<>(panier.getPizzaCommandes());
+
+        // Supprimer les pizzas commandes du panier
+        panier.getPizzaCommandes().clear();
+        panierRepository.save(panier); // Mise à jour du panier
+
+        // Supprimer les pizzas commandes en base
+        pizzaCommandeRepository.deleteAllByPanierId(idPanier);
+
+        for (PizzaCommande pizzaCommande : pizzaCommandes) {
             Commande commande = new Commande();
             commande.setNumeroCommande(numeroCommande);
             commande.setDate(date);
-            commande.setPizza(pizzaCommande);
+            commande.setPizza(pizzaRepository.findById(pizzaCommande.getPizza().getId()).get());
+            commande.setUser(user);
             commandeRepository.save(commande);
 
             // Mise à jour des statistiques
             statistiqueService.incrementPizzaStat(pizzaCommande.getPizza().getNom());
+
+            // Mise à jour des statistiques pour les ingrédients principaux
+            pizzaCommande.getPizza().getIngredients_principaux().forEach(ingredientPrincipal ->
+                    statistiqueService.incrementIngredientStat(ingredientPrincipal.getIngredient().getNom())
+            );
+
+            // Mise à jour des statistiques pour les ingrédients optionnels
             pizzaCommande.getIngredientsOptionnels().forEach(ingredientOptionnel ->
-                    statistiqueService.incrementIngredientStat(ingredientOptionnel.getIngredient().getNom()));
+                    statistiqueService.incrementIngredientStat(ingredientOptionnel.getIngredient().getNom())
+            );
+
+            // Mise à jour des statistiques pour l'utilisateur
             statistiqueService.incrementUserStat(panier.getUser().getNom());
         }
 
-        pizzaCommandeRepository.deleteAllByPanierId(idPanier);
-
         return ApiResponse.success(null, "Panier validé et converti en commande.");
     }
+
+
 }

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -21,6 +22,6 @@ public class Panier {
     @JoinColumn(name = "id_user", nullable = false)
     private User user;
 
-    @OneToMany
-    private List<PizzaCommande> pizzaCommandes;
+    @OneToMany(mappedBy = "panier", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PizzaCommande> pizzaCommandes = new ArrayList<>();
 }
