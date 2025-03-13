@@ -1,9 +1,13 @@
 package com.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 @Entity
 @Table(name = "pizza_commande")
@@ -17,7 +21,7 @@ public class PizzaCommande {
 
     @ManyToOne
     @JoinColumn(name = "id_pizza", nullable = false)
-    public Pizza pizza;
+    private Pizza pizza;
 
     @ManyToOne
     @JoinColumn(name = "id_panier", nullable = false)
@@ -25,8 +29,7 @@ public class PizzaCommande {
 
     private int quantite;
 
-    @ManyToOne
-    @JoinColumn(name = "id_commande")
-    private Commande commande;
-
+    @OneToMany(mappedBy = "pizzaCommande", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference("pizza-optionnel")
+    private Collection<IngredientOptionnel> ingredientsOptionnels = new ArrayList<>();
 }

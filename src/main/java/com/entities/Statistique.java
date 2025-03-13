@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Setter
@@ -21,11 +22,11 @@ public class Statistique {
     private String id;
 
     @Field("pizzas")
-    private Map<String, Long> pizzas;
+    private Map<String, Long> pizzas = new HashMap<>();
 
     @Field("ingredients")
-    private Map<String, Long> ingredients;
+    private Map<String, Long> ingredients = new HashMap<>();
 
     @Field("utilisateurs")
-    private Map<String, Long> utilisateurs;
+    private Map<String, Long> utilisateurs = new HashMap<>();
 }

@@ -1,5 +1,6 @@
 package com.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +22,12 @@ public class Commande {
     private String numeroCommande;
     private LocalDate date;
 
-    @OneToMany(mappedBy = "commande", cascade = CascadeType.ALL)
-    private List<PizzaCommande> pizzas;
+    @ManyToOne
+    @JoinColumn(name = "pizza_id", nullable = false)
+    private Pizza pizza;
+
+    @ManyToOne
+    @JoinColumn(name = "id_user")
+    private User user;
 }
 
