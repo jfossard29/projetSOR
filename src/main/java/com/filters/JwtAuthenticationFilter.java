@@ -52,24 +52,24 @@ public class JwtAuthenticationFilter extends org.springframework.web.filter.Once
         // Validation du token et extraction du nom d'utilisateur
         String token = authTokenCookie.get().getValue();
 
-//        try {
-//            DecodedJWT decodedJWT = validateToken(token);
-//
-//            // Décoder le token et enregistrer l'utilisateur dans le SecurityContext
-//            String username = decodedJWT.getSubject();
-//
-//            var authentication = new UsernamePasswordAuthenticationToken(
-//                    username, null, null // Mettez des rôles ici si nécessaires
-//            );
-//            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-//            SecurityContextHolder.getContext().setAuthentication(authentication);
-//
-//        } catch (Exception e) {
-//            // Si le token est invalide ou expiré, on renvoie une erreur 401
-//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//            response.getWriter().write("Token invalide ou expiré.");
-//            return;
-//        }
+        try {
+            DecodedJWT decodedJWT = validateToken(token);
+
+            // Décoder le token et enregistrer l'utilisateur dans le SecurityContext
+            String username = decodedJWT.getSubject();
+
+             var authentication = new UsernamePasswordAuthenticationToken(
+                    username, null, null // Mettez des rôles ici si nécessaires
+            );
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        } catch (Exception e) {
+            // Si le token est invalide ou expiré, on renvoie une erreur 401
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token invalide ou expiré.");
+            return;
+        }
 
         // Continuer avec la chaîne de filtres
         chain.doFilter(request, response);

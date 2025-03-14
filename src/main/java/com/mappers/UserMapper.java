@@ -29,10 +29,12 @@ public class UserMapper {
         }
 
         UserDto userDto = new UserDto();
+        userDto.setId(user.getId());
         userDto.setNom(user.getNom());
-        userDto.setToken(user.getToken());
         userDto.setMdp(user.getMdp());
         userDto.setEstClient(user.getEstClient());
+        userDto.setAdressePostale(user.getAdressePostale());
+        userDto.setAdresseEmail(user.getAdresseEmail());
         return userDto;
     }
 
@@ -49,10 +51,12 @@ public class UserMapper {
         }
 
         User user = new User();
+        user.setId(userDto.getId());
         user.setNom(userDto.getNom());
-        user.setToken(userDto.getToken());
         user.setEstClient(userDto.getEstClient());
         user.setMdp(userDto.getMdp());
+        user.setAdressePostale(userDto.getAdressePostale());
+        user.setAdresseEmail(userDto.getAdresseEmail());
         return user;
     }
 }

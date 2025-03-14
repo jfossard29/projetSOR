@@ -14,21 +14,15 @@ import lombok.*;
 @AllArgsConstructor
 public class UserDto {
 
-    /**
-     * Le nom d'utilisateur de l'utilisateur.
-     *
-     * Ce champ est utilisé pour identifier de manière unique l'utilisateur.
-     */
+    private Long id;
+
     private String nom;
 
-    /**
-     * Le mot de passe haché de l'utilisateur.
-     *
-     * Ce champ contient le mot de passe de l'utilisateur après l'application d'un algorithme de hachage.
-     */
     private String mdp;
 
-    private String token;
+    private String adressePostale;
+
+    private String adresseEmail;
 
     private Boolean estClient;
 }
