@@ -60,19 +60,11 @@ class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody User user, HttpServletResponse response) {
-        System.out.println(user.toString());
         Optional<User> optionalUser = userRepository.findByNom(user.getNom());
-        System.out.println(optionalUser.isEmpty());
         if (optionalUser.isEmpty() || !passwordEncoder.matches(user.getMdp(), optionalUser.get().getMdp())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nom d'utilisateur ou mot de passe incorrect");
         }
         String token = generateToken(optionalUser.get());
-        Cookie authCookie = new Cookie("AuthToken", token);
-        authCookie.setHttpOnly(false);
-        authCookie.setSecure(false);
-        authCookie.setPath("/");
-        authCookie.setMaxAge((int) EXPIRATION_TIME / 1000);
-        response.addCookie(authCookie);
         return ResponseEntity.ok(new TokenResponse(token));
     }
 
