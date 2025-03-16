@@ -27,6 +27,9 @@ public class AuthFilter implements Filter {
     static {
         PUBLIC_URLS.add("/api/login");
         PUBLIC_URLS.add("/api/register");
+        PUBLIC_URLS.add("/api/pizza");
+        PUBLIC_URLS.add("/api/ingredient");
+
     }
 
     private final String SECRET_KEY = "SeCrEtPiZZACeBoN";
