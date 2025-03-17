@@ -3,6 +3,7 @@ package com.services;
 import com.dtos.ApiResponse;
 import com.dtos.CommandeDto;
 import com.dtos.PanierDto;
+import com.dtos.PanierFusionDto;
 
 /**
  * Interface définissant les opérations sur les paniers.
@@ -49,4 +50,6 @@ public interface PanierService {
      * @return Une réponse contenant la commande créée.
      */
     ApiResponse<CommandeDto> validerPanier(Long idPanier);
+
+    ApiResponse<PanierDto> fusionPanierCookie(Long userId, PanierFusionDto panierFusionDto);
 }

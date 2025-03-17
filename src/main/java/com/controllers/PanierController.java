@@ -3,6 +3,7 @@ package com.controllers;
 import com.dtos.ApiResponse;
 import com.dtos.CommandeDto;
 import com.dtos.PanierDto;
+import com.dtos.PanierFusionDto;
 import com.services.impl.PanierServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -61,6 +62,21 @@ public class PanierController {
     @PostMapping("/valider/{idPanier}")
     public ResponseEntity<ApiResponse<CommandeDto>> validerPanier(@PathVariable Long idPanier) {
         ApiResponse<CommandeDto> response = panierService.validerPanier(idPanier);
+        return ResponseEntity.status(response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @PostMapping("/fusion-cookie/{userId}")
+    public ResponseEntity<ApiResponse<PanierDto>> fusionPanierCookie(
+            @PathVariable Long userId,
+            @RequestBody PanierFusionDto panierFusionDto,
+            HttpServletRequest request) {
+
+        if (!isTokenValid(request)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Accès non autorisé. Veuillez vous connecter."));
+        }
+
+        ApiResponse<PanierDto> response = panierService.fusionPanierCookie(userId, panierFusionDto);
         return ResponseEntity.status(response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(response);
     }
 

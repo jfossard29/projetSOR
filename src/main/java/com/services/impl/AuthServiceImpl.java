@@ -2,10 +2,12 @@ package com.services.impl;
 
 import com.dtos.IngredientDto;
 import com.dtos.UserDto;
+import com.entities.Panier;
 import com.entities.User;
 import com.mappers.DogMapper;
 import com.mappers.UserMapper;
 import com.repositories.DogRepository;
+import com.repositories.PanierRepository;
 import com.repositories.UserRepository;
 import com.services.AuthService;
 import jakarta.annotation.PostConstruct;
@@ -32,24 +34,32 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-
-
-
     private final String SECRET_KEY = "SeCrEtPiZZACeBoN";
 
     public AuthServiceImpl(UserMapper userMapper) {
         this.userMapper = userMapper;
     }
 
+    @Autowired
+    private PanierRepository panierRepository;
+
     public User registerUser(UserDto userDTO) {
         User user = new User();
         user.setNom(userDTO.getNom());
-        user.setMdp(new BCryptPasswordEncoder().encode(userDTO.getMdp()));
+        user.setMdp(passwordEncoder.encode(userDTO.getMdp()));
         user.setEstClient(userDTO.getEstClient());
         user.setAdresseEmail(userDTO.getAdresseEmail());
         user.setAdressePostale(userDTO.getAdressePostale());
-        return userRepository.save(user);
+
+        User savedUser = userRepository.save(user);
+
+        Panier panier = new Panier();
+        panier.setUser(savedUser);
+        panierRepository.save(panier);
+
+        return savedUser;
     }
+
 
     @PostConstruct
     public void seedAdminUser() {

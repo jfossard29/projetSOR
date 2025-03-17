@@ -1,12 +1,7 @@
 package com.services.impl;
 
-import com.dtos.ApiResponse;
-import com.dtos.CommandeDto;
-import com.dtos.PanierDto;
-import com.entities.Commande;
-import com.entities.Panier;
-import com.entities.PizzaCommande;
-import com.entities.User;
+import com.dtos.*;
+import com.entities.*;
 import com.mappers.CommandeMapper;
 import com.mappers.PanierMapper;
 import com.repositories.*;
@@ -33,10 +28,10 @@ public class PanierServiceImpl implements PanierService {
     private final PanierMapper panierMapper;
     private final CommandeMapper commandeMapper;
     private final PizzaRepository pizzaRepository;
-
+    private final IngredientRepository ingredientRepository;
     public PanierServiceImpl(PanierRepository panierRepository, PizzaCommandeRepository pizzaCommandeRepository,
                              UserRepository userRepository, CommandeRepository commandeRepository,
-                             StatistiqueService statistiqueService, PanierMapper panierMapper, CommandeMapper commandeMapper, PizzaRepository pizzaRepository) {
+                             StatistiqueService statistiqueService, PanierMapper panierMapper, CommandeMapper commandeMapper, PizzaRepository pizzaRepository,IngredientRepository ingredientRepository) {
         this.panierRepository = panierRepository;
         this.pizzaCommandeRepository = pizzaCommandeRepository;
         this.userRepository = userRepository;
@@ -45,6 +40,7 @@ public class PanierServiceImpl implements PanierService {
         this.panierMapper = panierMapper;
         this.commandeMapper = commandeMapper;
         this.pizzaRepository = pizzaRepository;
+        this.ingredientRepository = ingredientRepository;
     }
 
     @Override
@@ -165,5 +161,59 @@ public class PanierServiceImpl implements PanierService {
         return ApiResponse.success(null, "Panier validé et converti en commande.");
     }
 
+    @Override
+    @Transactional
+    public ApiResponse<PanierDto> fusionPanierCookie(Long userId, PanierFusionDto panierFusionDto) {
+        Optional<Panier> panierOpt = panierRepository.findByUserId(userId);
+        if (panierOpt.isEmpty()) {
+            return ApiResponse.error("Aucun panier trouvé pour cet utilisateur");
+        }
+
+        Panier panier = panierOpt.get();
+
+        // Traiter chaque pizza commande du cookie
+        for (PizzaCommandeCookieDto pizzaCommandeCookieDto : panierFusionDto.getPizzaCommandes()) {
+            try {
+                // Récupérer la pizza
+                Optional<Pizza> pizzaOpt = pizzaRepository.findById(pizzaCommandeCookieDto.getPizzaId());
+                if (pizzaOpt.isEmpty()) {
+                    continue; // Ignorer cette pizza si elle n'existe pas
+                }
+
+                // Créer la pizza commande
+                PizzaCommande pizzaCommande = new PizzaCommande();
+                pizzaCommande.setPizza(pizzaOpt.get());
+                pizzaCommande.setQuantite(pizzaCommandeCookieDto.getQuantite());
+                pizzaCommande.setPanier(panier);
+
+                // Ajouter les ingrédients optionnels
+                if (pizzaCommandeCookieDto.getIngredientsOptionnelsIds() != null && !pizzaCommandeCookieDto.getIngredientsOptionnelsIds().isEmpty()) {
+                    for (Long ingredientId : pizzaCommandeCookieDto.getIngredientsOptionnelsIds()) {
+                        // Récupérer l'ingrédient
+                        Optional<Ingredient> ingredientOpt = ingredientRepository.findById(ingredientId);
+                        if (ingredientOpt.isPresent()) {
+                            // Ajouter l'ingrédient à la pizza commande
+                            // Note: Cela dépend de la structure de votre entité PizzaCommande
+                            // Vous devrez adapter cette partie selon votre modèle
+                            IngredientOptionnel ingredientOptionnel = new IngredientOptionnel();
+                            ingredientOptionnel.setIngredient(ingredientOpt.get());
+                            ingredientOptionnel.setPizzaCommande(pizzaCommande);
+                            pizzaCommande.getIngredientsOptionnels().add(ingredientOptionnel);
+                        }
+                    }
+                }
+
+                // Sauvegarder la pizza commande
+                pizzaCommandeRepository.save(pizzaCommande);
+
+            } catch (Exception e) {
+                // Log l'erreur mais continuer avec les autres pizzas
+                System.err.println("Erreur lors de l'ajout d'une pizza au panier: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        return ApiResponse.success(panierMapper.toDto(panier), "Panier fusionné avec succès.");
+    }
 
 }

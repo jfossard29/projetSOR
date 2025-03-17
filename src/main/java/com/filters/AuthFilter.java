@@ -29,6 +29,12 @@ public class AuthFilter implements Filter {
         PUBLIC_URLS.add("/api/register");
         PUBLIC_URLS.add("/api/pizza");
         PUBLIC_URLS.add("/api/ingredient");
+        PUBLIC_URLS.add("/api/panier");
+        PUBLIC_URLS.add("/api/panier/user/");
+        PUBLIC_URLS.add("/api/panier/fusion-cookie/");
+        PUBLIC_URLS.add("/api/pizzaCommande");
+        PUBLIC_URLS.add("/api/pizzaCommande/");
+
 
     }
 
