@@ -34,6 +34,10 @@ public class AuthFilter implements Filter {
         PUBLIC_URLS.add("/api/panier/fusion-cookie/");
         PUBLIC_URLS.add("/api/pizzaCommande");
         PUBLIC_URLS.add("/api/pizzaCommande/");
+        PUBLIC_URLS.add("/api/commentaire");
+        PUBLIC_URLS.add("/api/commentaire/pizza/");
+        PUBLIC_URLS.add("/api/commande");
+
 
 
     }
@@ -58,8 +62,11 @@ public class AuthFilter implements Filter {
         String path = httpRequest.getServletPath();
         System.out.println("Path intercepté par AuthFilter : " + path);
 
+        boolean isPublicUrl = PUBLIC_URLS.stream()
+                .anyMatch(publicUrl -> path.startsWith(publicUrl));
+
         // Si l'URL est publique, on autorise l'accès sans authentification
-        if (PUBLIC_URLS.contains(path)) {
+        if (PUBLIC_URLS.contains(path) || isPublicUrl) {
             System.out.println("Accès autorisé sans authentification pour : " + path);
             chain.doFilter(request, response);
             return;

@@ -7,8 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Entity
 @Table(name = "commentaire")
 @Data
@@ -21,7 +19,7 @@ public class Commentaire {
 
     private String text;
     private String photo;
-    private LocalDate date;
+    private String date;
     private int note;
 
     @ManyToOne

@@ -50,7 +50,7 @@ public class CommentaireController {
      * @param request la requête HTTP pour valider le token JWT
      * @return une réponse HTTP contenant le commentaire enregistré ou une erreur
      */
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<CommentaireDto>> addCommentaire(
             @RequestBody CommentaireDto dto,
             HttpServletRequest request
@@ -71,8 +71,15 @@ public class CommentaireController {
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(res);
     }
 
+    /**
+     * Ajoute un commentaire avec une image (requiert un token JWT valide).
+     * @param commentaireJson le commentaire à enregistrer au format JSON
+     * @param file le fichier image à associer au commentaire
+     * @param request la requête HTTP pour valider le token JWT
+     * @return une réponse HTTP contenant le commentaire enregistré ou une erreur
+     */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<CommentaireDto>> savePizza(
+    public ResponseEntity<ApiResponse<CommentaireDto>> addCommentaireWithImage(
             @RequestPart("commentaire") String commentaireJson,
             @RequestPart(value = "image", required = false) MultipartFile file,
             HttpServletRequest request
@@ -106,7 +113,7 @@ public class CommentaireController {
             commentaireDto.setPhoto(fileName);
         }
 
-        // Sauvegarder la pizza
+        // Sauvegarder le commentaire
         ApiResponse<CommentaireDto> res = commentaireService.saveCommentaire(commentaireDto);
         res = commentaireService.getCommentaireById(res.getData().getId());
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(res);
