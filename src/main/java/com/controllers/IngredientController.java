@@ -32,7 +32,7 @@ public class IngredientController {
     private final IngredientService ingredientService;
     private final FileStorageServiceImpl fileStorageService;
 
-    public IngredientController(IngredientService ingredientService,FileStorageServiceImpl fileStorageService) {
+    public IngredientController(IngredientService ingredientService, FileStorageServiceImpl fileStorageService) {
         this.ingredientService = ingredientService;
         this.fileStorageService = fileStorageService;
     }
@@ -58,8 +58,15 @@ public class IngredientController {
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND).body(res);
     }
 
+    /**
+     * Sauvegarde un nouvel ingrédient avec une image optionnelle.
+     * @param ingredientJson Les données de l'ingrédient au format JSON.
+     * @param file L'image associée à l'ingrédient (optionnelle).
+     * @param request La requête HTTP pour valider le token JWT.
+     * @return Une réponse contenant l'ingrédient créé ou une erreur.
+     */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<IngredientDto>> savePizza(
+    public ResponseEntity<ApiResponse<IngredientDto>> saveIngredient(
             @RequestPart("ingredient") String ingredientJson,
             @RequestPart(value = "image", required = false) MultipartFile file,
             HttpServletRequest request
@@ -72,7 +79,7 @@ public class IngredientController {
         // Logging du JSON reçu
         System.out.println("JSON reçu: " + ingredientJson);
 
-        // Convertir la chaîne JSON en objet PizzaDto
+        // Convertir la chaîne JSON en objet IngredientDto
         ObjectMapper objectMapper = new ObjectMapper();
         // Configurer l'ObjectMapper pour être plus tolérant
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -87,15 +94,25 @@ public class IngredientController {
         }
 
         // Gérer le fichier image
-        System.out.println("Fichier photo: " + file);
-        if (file != null && !file.isEmpty()) {
-            String fileName = fileStorageService.storeFile(file);
-            ingredientDto.setPhoto(fileName);
+        System.out.println("Fichier photo: " + (file != null ? file.getOriginalFilename() : "aucun"));
+        try {
+            if (file != null && !file.isEmpty()) {
+                String fileName = fileStorageService.storeFile(file);
+                System.out.println("Fichier sauvegardé sous le nom: " + fileName);
+                ingredientDto.setPhoto(fileName);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erreur lors du traitement de l'image: " + e.getMessage()));
         }
 
-        // Sauvegarder la pizza
+        // Sauvegarder l'ingrédient
         ApiResponse<IngredientDto> res = ingredientService.saveIngredient(ingredientDto);
-        res = ingredientService.getIngredientById(res.getData().getId());
+        if (res.isSuccess() && res.getData() != null && res.getData().getId() != null) {
+            // Récupérer l'ingrédient complet après sauvegarde
+            res = ingredientService.getIngredientById(res.getData().getId());
+        }
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(res);
     }
 
@@ -141,34 +158,41 @@ public class IngredientController {
         return ResponseEntity.status(res.isSuccess() ? HttpStatus.OK : HttpStatus.NOT_FOUND).body(res);
     }
 
+    /**
+     * Récupère l'image d'un ingrédient par son ID.
+     * @param id L'ID de l'ingrédient.
+     * @return La ressource image ou une erreur.
+     */
     @GetMapping("/images/{id}")
     public ResponseEntity<Resource> getIngredientImage(@PathVariable Long id) {
         try {
-            IngredientDto ingredientDto = ingredientService.getIngredientById(id).getData();
-            if (ingredientDto == null || ingredientDto.getPhoto() == null) {
+            ApiResponse<IngredientDto> response = ingredientService.getIngredientById(id);
+            if (!response.isSuccess() || response.getData() == null || response.getData().getPhoto() == null) {
                 return ResponseEntity.notFound().build();
             }
 
-            String imageFileName = ingredientDto.getPhoto();
+            String imageFileName = response.getData().getPhoto();
             Path filePath = fileStorageService.getFilePath(imageFileName);
-
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists()) {
                 return ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                        .contentType(MediaType.IMAGE_JPEG)  // Ou utilisez MediaTypeFactory pour déterminer le type
                         .body(resource);
             } else {
+                System.out.println("Image non trouvée: " + filePath);
                 return ResponseEntity.notFound().build();
             }
         } catch (IOException ex) {
+            ex.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
 
     private boolean isTokenValid(HttpServletRequest request) {
-//        Optional<Cookie> authTokenCookie = getAuthTokenCookie(request);
-//        return authTokenCookie.map(cookie -> JwtAuthenticationFilter.validateToken(cookie.getValue())).orElse(false);
+        // Note: Cette méthode retourne toujours true actuellement
+        // Implémentez la validation du token si nécessaire
         return true;
     }
 
