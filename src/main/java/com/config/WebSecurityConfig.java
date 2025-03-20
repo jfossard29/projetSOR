@@ -84,6 +84,9 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/panier/user/**").permitAll()
                         .requestMatchers("/api/panier/fusion-cookie/**").permitAll()
 
+                        //Users
+                        .requestMatchers("/api/users/**").permitAll()
+
                         // Toutes les autres routes nécessitent une authentification
                         .anyRequest().authenticated()
 

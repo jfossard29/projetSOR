@@ -10,4 +10,5 @@ import java.util.List;
  */
 @Repository
 public interface CommentaireRepository extends JpaRepository<Commentaire, Long> {
+    List<Commentaire> findByUser_Id(Long userId);
 }

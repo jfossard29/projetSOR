@@ -37,6 +37,7 @@ public class AuthFilter implements Filter {
         PUBLIC_URLS.add("/api/commentaire");
         PUBLIC_URLS.add("/api/commentaire/pizza/");
         PUBLIC_URLS.add("/api/commande");
+        PUBLIC_URLS.add("/api/users/");
 
 
 

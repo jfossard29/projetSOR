@@ -2,10 +2,12 @@ package com.services.impl;
 
 import com.dtos.IngredientDto;
 import com.dtos.UserDto;
+import com.entities.Commentaire;
 import com.entities.Panier;
 import com.entities.User;
 import com.mappers.DogMapper;
 import com.mappers.UserMapper;
+import com.repositories.CommentaireRepository;
 import com.repositories.DogRepository;
 import com.repositories.PanierRepository;
 import com.repositories.UserRepository;
@@ -35,6 +37,8 @@ public class AuthServiceImpl implements AuthService {
     private BCryptPasswordEncoder passwordEncoder;
 
     private final String SECRET_KEY = "SeCrEtPiZZACeBoN";
+    @Autowired
+    private CommentaireRepository commentaireRepository;
 
     public AuthServiceImpl(UserMapper userMapper) {
         this.userMapper = userMapper;
@@ -44,20 +48,25 @@ public class AuthServiceImpl implements AuthService {
     private PanierRepository panierRepository;
 
     public User registerUser(UserDto userDTO) {
-        User user = new User();
-        user.setNom(userDTO.getNom());
-        user.setMdp(passwordEncoder.encode(userDTO.getMdp()));
-        user.setEstClient(userDTO.getEstClient());
-        user.setAdresseEmail(userDTO.getAdresseEmail());
-        user.setAdressePostale(userDTO.getAdressePostale());
+        if (userRepository.findByNom(userDTO.getNom()).isEmpty()) {
+            User user = new User();
+            user.setNom(userDTO.getNom());
+            user.setMdp(passwordEncoder.encode(userDTO.getMdp()));
+            user.setEstClient(userDTO.getEstClient());
+            user.setAdresseEmail(userDTO.getAdresseEmail());
+            user.setAdressePostale(userDTO.getAdressePostale());
 
-        User savedUser = userRepository.save(user);
+            User savedUser = userRepository.save(user);
 
-        Panier panier = new Panier();
-        panier.setUser(savedUser);
-        panierRepository.save(panier);
+            Panier panier = new Panier();
+            panier.setUser(savedUser);
+            panierRepository.save(panier);
 
-        return savedUser;
+            return savedUser;
+        }else{
+            return null;
+        }
+
     }
 
 
@@ -89,6 +98,25 @@ public class AuthServiceImpl implements AuthService {
     }
     @Override
     public boolean deleteUser(Long userId) {
+        List<Commentaire> userCommentaires = commentaireRepository.findByUser_Id(userId);
+
+        User deletedUser = userRepository.findById(-1L).orElseGet(() -> {
+            User user = new User();
+            user.setId(-1L);
+            user.setNom("Utilisateur supprimé");
+            user.setMdp(passwordEncoder.encode("deleted"));
+            user.setEstClient(false);
+            return userRepository.save(user);
+        });
+
+        for (Commentaire commentaire : userCommentaires) {
+            commentaire.setUser(deletedUser);
+            commentaireRepository.save(commentaire);
+        }
+
+        panierRepository.deleteById(userId);
+
+        // Supprimer l'utilisateur
         userRepository.deleteById(userId);
         return true;
     }
